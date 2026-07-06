@@ -118,16 +118,15 @@ let memOnly=false;
 const today=()=>new Date().toISOString().slice(0,10);
 async function load(){
   try{
-    if(!window.storage){memOnly=true;return}
-    const r=await window.storage.get("wortschatz-v1");
-    if(r&&r.value)S=Object.assign(S,JSON.parse(r.value));
-  }catch(e){/* geen data of storage niet beschikbaar */}
+    const raw=localStorage.getItem("wortschatz-v1");
+    if(raw)S=Object.assign(S,JSON.parse(raw));
+  }catch(e){memOnly=true;}
 }
 let saveT=null;
 function save(){
-  if(memOnly||!window.storage)return;
+  if(memOnly)return;
   clearTimeout(saveT);
-  saveT=setTimeout(async()=>{try{await window.storage.set("wortschatz-v1",JSON.stringify(S))}catch(e){console.error("opslaan mislukt",e)}},350);
+  saveT=setTimeout(()=>{try{localStorage.setItem("wortschatz-v1",JSON.stringify(S))}catch(e){console.error("opslaan mislukt",e)}},350);
 }
 
 /* ---------- SRS (vereenvoudigde SM-2) ---------- */
@@ -291,10 +290,10 @@ function gramView(){
   <button class="btn-main" onclick="catFilter='gram';startSession()">Oefen deze regels als drills</button>
   <div class="note" style="margin-top:10px">Tip: lees één regel, oefen dan de drills — regels beklijven pas door ze te gebruiken.</div>`;
 }
-async function resetAll(){
+function resetAll(){
   if(!confirm("Alle voortgang en je streak wissen?"))return;
   S={cards:{},streak:0,lastDay:null,log:{},lvl:S.lvl};
-  try{if(window.storage)await window.storage.set("wortschatz-v1",JSON.stringify(S))}catch(e){}
+  try{localStorage.setItem("wortschatz-v1",JSON.stringify(S))}catch(e){}
   home();
 }
 document.addEventListener("keydown",e=>{

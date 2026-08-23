@@ -17,6 +17,15 @@
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font-family:'Karla',sans-serif;font-size:16px;line-height:1.55;min-height:100vh}
 .wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px}
+.home-layout{display:grid;grid-template-columns:1fr;grid-template-areas:"today" "path";gap:14px;margin-bottom:14px}
+.home-layout .today-col{grid-area:today}
+.home-layout .path-col{grid-area:path;min-width:0}
+.home-layout .panel{margin-bottom:0;height:100%}
+@media (min-width:860px){
+  .wrap{max-width:980px}
+  .home-layout{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"path today";align-items:start}
+  .today-col{position:sticky;top:20px}
+}
 header{display:flex;align-items:baseline;justify-content:space-between;padding:6px 2px 18px;border-bottom:1px solid var(--line);margin-bottom:20px}
 .logo{font-family:'Fraunces',serif;font-weight:600;font-size:24px;letter-spacing:.2px}
 .logo span{color:var(--brass)}
@@ -45,18 +54,40 @@ button{font-family:'Karla',sans-serif;cursor:pointer;border:none;border-radius:1
 .path-panel{padding-bottom:10px}
 .path-area{position:relative;width:100%;margin-top:8px}
 .path-svg{position:absolute;inset:0;width:100%;height:100%}
-.path-svg path{fill:none;stroke:var(--line);stroke-width:.7;stroke-dasharray:1.6 2.4;stroke-linecap:round}
+.path-svg path.path-bg{fill:none;stroke:var(--line);stroke-width:.7;stroke-dasharray:1.6 2.4;stroke-linecap:round}
+.path-svg path.path-traveled{fill:none;stroke:var(--brass);stroke-width:.9;stroke-linecap:round;opacity:.85;filter:drop-shadow(0 0 2px rgba(200,169,106,.5))}
 .node{position:absolute;transform:translate(-50%,-50%);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:78px;padding:6px 0;z-index:2}
-.node-ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--brass) calc(var(--pct)*1%),var(--panel2) 0);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--panel);transition:box-shadow .2s}
-.node-face{width:45px;height:45px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:21px}
+.node-ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--brass) calc(var(--pct)*1%),var(--panel2) 0);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--panel);transition:box-shadow .2s,transform .2s}
+.node-face{width:45px;height:45px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:21px;transition:transform .15s}
 .node.current .node-ring{box-shadow:0 0 0 3px var(--brass)}
-.node:active .node-face{transform:scale(.92)}
+.node:active .node-face{transform:scale(.9)}
+.node.tapped .node-ring{animation:node-pop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes node-pop{
+  0%{transform:scale(1)}
+  35%{transform:scale(1.22)}
+  60%{transform:scale(.94)}
+  100%{transform:scale(1)}
+}
 .node-label{font-size:10px;color:var(--ink);text-align:center;line-height:1.15;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .node-lvl{font-size:8.5px;color:var(--brass-dim);letter-spacing:.4px}
-.walker{position:absolute;transform:translate(-50%,-100%);font-size:28px;z-index:5;transition:left .6s cubic-bezier(.4,0,.2,1),top .6s cubic-bezier(.4,0,.2,1);animation:walker-bob 1.8s ease-in-out infinite;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45));pointer-events:none}
-.walker.walking{animation:walker-step .28s ease-in-out infinite}
-@keyframes walker-bob{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-108%)}}
-@keyframes walker-step{0%,100%{transform:translate(-50%,-100%) rotate(-6deg)}50%{transform:translate(-50%,-104%) rotate(6deg)}}
+.walker{position:absolute;transform:translate(-50%,-100%);z-index:5;transition:left .62s cubic-bezier(.45,.05,.15,1.4),top .62s cubic-bezier(.45,.05,.15,1.4);pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.walker .char{display:block;font-size:30px;line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45));transform-origin:50% 100%;animation:char-idle 2.4s ease-in-out infinite}
+.walker .char-shadow{width:20px;height:6px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.4),transparent);margin-top:-2px;animation:shadow-idle 2.4s ease-in-out infinite}
+@keyframes char-idle{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-3px) scale(1.02,.98)}}
+@keyframes shadow-idle{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(.85);opacity:.35}}
+.walker.walking .char{animation:char-hop .62s cubic-bezier(.32,1.6,.6,1) 1}
+.walker.walking .char-shadow{animation:shadow-hop .62s ease-in-out 1}
+@keyframes char-hop{
+  0%{transform:translateY(0) scale(1,1) rotate(0deg)}
+  18%{transform:translateY(5px) scale(1.22,.8) rotate(-5deg)}
+  55%{transform:translateY(-32px) scale(.86,1.18) rotate(7deg)}
+  82%{transform:translateY(-3px) scale(1.1,.92) rotate(-3deg)}
+  100%{transform:translateY(0) scale(1,1) rotate(0deg)}
+}
+@keyframes shadow-hop{
+  0%,100%{transform:scale(1);opacity:.5}
+  55%{transform:scale(.45);opacity:.15}
+}
 /* modal */
 .modal-backdrop{position:fixed;inset:0;background:rgba(10,13,11,.72);display:flex;align-items:flex-end;justify-content:center;z-index:50;animation:fade-in .18s ease}
 @keyframes fade-in{from{opacity:0}to{opacity:1}}
@@ -97,22 +128,35 @@ button{font-family:'Karla',sans-serif;cursor:pointer;border:none;border-radius:1
 .type-in{width:100%;margin-top:14px;padding:13px 14px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--ink);font-size:16px;font-family:'Karla',sans-serif}
 .type-in:focus{outline:2px solid var(--brass);outline-offset:1px;border-color:var(--brass-dim)}
 /* feedback fx */
-.fx-particle{position:absolute;pointer-events:none;font-size:18px;transform:translate(-50%,-50%);animation:fx-pop .85s ease-out forwards;z-index:6}
+.fx-particle{position:absolute;pointer-events:none;font-size:19px;transform:translate(-50%,-50%);animation:fx-pop .9s ease-out forwards;z-index:6}
 @keyframes fx-pop{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
-  15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}
-  100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.7)}
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0deg)}
+  15%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(var(--rot))}
+  100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.55) rotate(calc(var(--rot) * 2))}
 }
-.card.shake{animation:card-shake .32s ease}
+.fx-toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:'Fraunces',serif;font-weight:600;font-size:21px;white-space:nowrap;pointer-events:none;z-index:7;animation:toast-pop .9s ease-out forwards}
+@keyframes toast-pop{
+  0%{opacity:0;transform:translate(-50%,-40%) scale(.6) rotate(-3deg)}
+  22%{opacity:1;transform:translate(-50%,-58%) scale(1.15) rotate(2deg)}
+  75%{opacity:1;transform:translate(-50%,-68%) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(-50%,-82%) scale(.92) rotate(0deg)}
+}
+.card.shake{animation:card-shake .36s ease}
 @keyframes card-shake{
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-8px)}
-  40%{transform:translateX(7px)}
-  60%{transform:translateX(-5px)}
-  80%{transform:translateX(3px)}
+  0%,100%{transform:translateX(0) rotate(0deg)}
+  20%{transform:translateX(-9px) rotate(-1.5deg)}
+  40%{transform:translateX(8px) rotate(1.5deg)}
+  60%{transform:translateX(-6px) rotate(-1deg)}
+  80%{transform:translateX(4px) rotate(.5deg)}
 }
-.card.glow-gold{box-shadow:0 0 0 3px var(--brass) inset,0 0 30px -4px var(--brass)}
-.card.glow-green{box-shadow:0 0 0 3px var(--das) inset,0 0 30px -4px var(--das)}
+.card.pop{animation:card-pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes card-pop{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.035)}
+  100%{transform:scale(1)}
+}
+.card.glow-gold{box-shadow:0 0 0 3px var(--brass) inset,0 0 34px -4px var(--brass)}
+.card.glow-green{box-shadow:0 0 0 3px var(--das) inset,0 0 34px -4px var(--das)}
 /* done */
 .done{text-align:center;padding:60px 20px}
 .done h2{font-size:26px;margin-bottom:10px}
@@ -245,11 +289,36 @@ function buildPathD(pts){
   d+=` T ${last.x} ${last.y}`;
   return d;
 }
+function updateTraveledPath(idx){
+  const svg=document.querySelector(".path-svg");
+  if(!svg)return;
+  let travEl=svg.querySelector(".path-traveled");
+  const d=idx>0?buildPathD(nodePositions.slice(0,idx+1)):"";
+  if(d){
+    if(!travEl){
+      travEl=document.createElementNS("http://www.w3.org/2000/svg","path");
+      travEl.setAttribute("class","path-traveled");
+      svg.appendChild(travEl);
+    }
+    travEl.setAttribute("d",d);
+  }else if(travEl){
+    travEl.remove();
+  }
+}
 function selectNode(idx){
+  const nodeEls=document.querySelectorAll(".node");
+  const tappedEl=nodeEls[idx];
+  if(tappedEl&&!reducedMotion()){
+    tappedEl.classList.remove("tapped");
+    void tappedEl.offsetWidth;
+    tappedEl.classList.add("tapped");
+    setTimeout(()=>tappedEl.classList.remove("tapped"),500);
+  }
   if(idx===curIdx){openPopup(CAT_KEYS[idx]);return}
   const target=nodePositions[idx],walkerEl=document.getElementById("walker");
   curIdx=idx;S.curNode=idx;save();
-  document.querySelectorAll(".node").forEach((n,i)=>n.classList.toggle("current",i===idx));
+  nodeEls.forEach((n,i)=>n.classList.toggle("current",i===idx));
+  updateTraveledPath(idx);
   if(!walkerEl||reducedMotion()){openPopup(CAT_KEYS[idx]);return}
   walkerEl.classList.add("walking");
   walkerEl.style.left=target.x+"%";
@@ -296,6 +365,7 @@ function home(){
   pathH=H;CAT_KEYS=keys;
   curIdx=(S.curNode!=null&&S.curNode<keys.length)?S.curNode:0;
   const svgD=buildPathD(nodePositions);
+  const traveledD=curIdx>0?buildPathD(nodePositions.slice(0,curIdx+1)):"";
   const nodesHtml=keys.map((k,idx)=>{
     const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
     const seen=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
@@ -309,27 +379,33 @@ function home(){
     </button>`;
   }).join("");
   const wp=nodePositions[curIdx];
-  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${wp.y/H*100}%">🚶</div>`;
+  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${wp.y/H*100}%"><span class="char">🚶</span><span class="char-shadow"></span></div>`;
   app.innerHTML=header()+`
   <div class="chips">${chips}</div>
-  <div class="panel">
-    <h2>Vandaag</h2><div class="sub">Herhalingen komen terug op het moment dat je ze bijna vergeet.</div>
-    <div class="today-nums">
-      <div class="tn due"><b>${due}</b><span>TE HERHALEN</span></div>
-      <div class="tn"><b>${nw}</b><span>NIEUW IN SESSIE</span></div>
-      <div class="tn"><b>${(S.log[today()]||{}).rev||0}</b><span>GEDAAN VANDAAG</span></div>
+  <div class="home-layout">
+    <div class="path-col">
+      <div class="panel path-panel">
+        <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen — je figuurtje loopt er naartoe</div>
+        <div class="path-area" style="aspect-ratio:100/${H}">
+          <svg class="path-svg" viewBox="0 0 100 ${H}"><path class="path-bg" d="${svgD}"/>${traveledD?`<path class="path-traveled" d="${traveledD}"/>`:""}</svg>
+          ${nodesHtml}
+          ${walkerHtml}
+        </div>
+      </div>
     </div>
-    <button class="btn-main" ${due+nw===0?"disabled":""} onclick="startSession()">${due+nw===0?"Alles geleerd — kom terug voor herhalingen":"Start sessie ("+(due+nw)+" kaarten)"}</button>
-    <button class="chip ${S.typeMode?"on":""}" onclick="toggleType()" style="margin-top:12px">Antwoord typen: ${S.typeMode?"aan":"uit"}</button>
-    <span class="sub" style="font-size:12px;margin-left:8px">${S.typeMode?"traint spelling & precisie":"hardop zeggen, zelf beoordelen"}</span>
-    <div class="legend"><span><i class="dot" style="background:var(--der)"></i>der</span><span><i class="dot" style="background:var(--die)"></i>die</span><span><i class="dot" style="background:var(--das)"></i>das</span><span style="margin-left:auto">leer het lidwoord als kleur mee</span></div>
-  </div>
-  <div class="panel path-panel">
-    <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen — je figuurtje loopt er naartoe</div>
-    <div class="path-area" style="aspect-ratio:100/${H}">
-      <svg class="path-svg" viewBox="0 0 100 ${H}"><path d="${svgD}"/></svg>
-      ${nodesHtml}
-      ${walkerHtml}
+    <div class="today-col">
+      <div class="panel">
+        <h2>Vandaag</h2><div class="sub">Herhalingen komen terug op het moment dat je ze bijna vergeet.</div>
+        <div class="today-nums">
+          <div class="tn due"><b>${due}</b><span>TE HERHALEN</span></div>
+          <div class="tn"><b>${nw}</b><span>NIEUW IN SESSIE</span></div>
+          <div class="tn"><b>${(S.log[today()]||{}).rev||0}</b><span>GEDAAN VANDAAG</span></div>
+        </div>
+        <button class="btn-main" ${due+nw===0?"disabled":""} onclick="startSession()">${due+nw===0?"Alles geleerd — kom terug voor herhalingen":"Start sessie ("+(due+nw)+" kaarten)"}</button>
+        <button class="chip ${S.typeMode?"on":""}" onclick="toggleType()" style="margin-top:12px">Antwoord typen: ${S.typeMode?"aan":"uit"}</button>
+        <span class="sub" style="font-size:12px;margin-left:8px">${S.typeMode?"traint spelling & precisie":"hardop zeggen, zelf beoordelen"}</span>
+        <div class="legend"><span><i class="dot" style="background:var(--der)"></i>der</span><span><i class="dot" style="background:var(--die)"></i>die</span><span><i class="dot" style="background:var(--das)"></i>das</span><span style="margin-left:auto">leer het lidwoord als kleur mee</span></div>
+      </div>
     </div>
   </div>
   <button class="reveal-btn" onclick="gramView()" style="margin:0 0 14px">Grammatica-gids · de 6 regels</button>
@@ -424,10 +500,11 @@ function dontKnow(){
 }
 function toggleType(){S.typeMode=!S.typeMode;save();home()}
 function flip(){flipped=true;render()}
+const CHEER_WORDS={3:["Geweldig!","Fantastisch!","Top!","Uitstekend!"],2:["Goed zo!","Mooi!","Prima!"],1:["Onthouden!","Bijna daar!"]};
 function burstFx(el,g){
   const good=g===3;
-  const n=good?10:7;
-  const emojis=good?["✨","⭐","🎉","💫"]:["✓","✨","·"];
+  const n=good?13:8;
+  const emojis=good?["✨","⭐","🎉","💫","🌟"]:["✓","✨","·"];
   for(let k=0;k<n;k++){
     const p=document.createElement("span");
     p.className="fx-particle";
@@ -436,13 +513,21 @@ function burstFx(el,g){
     const dist=40+Math.random()*70;
     p.style.setProperty("--dx",(Math.cos(angle)*dist)+"px");
     p.style.setProperty("--dy",(Math.sin(angle)*dist)+"px");
+    p.style.setProperty("--rot",(Math.random()*60-30)+"deg");
     p.style.left="50%";p.style.top="42%";
     p.style.animationDelay=(Math.random()*80)+"ms";
     el.appendChild(p);
-    setTimeout(()=>p.remove(),950);
+    setTimeout(()=>p.remove(),1000);
   }
-  el.classList.add(good?"glow-gold":"glow-green");
-  setTimeout(()=>el.classList.remove("glow-gold","glow-green"),500);
+  el.classList.add(good?"glow-gold":"glow-green","pop");
+  setTimeout(()=>el.classList.remove("glow-gold","glow-green","pop"),500);
+  const words=CHEER_WORDS[g]||CHEER_WORDS[2];
+  const toast=document.createElement("div");
+  toast.className="fx-toast";
+  toast.style.color=good?"var(--brass)":"var(--das)";
+  toast.textContent=words[Math.floor(Math.random()*words.length)];
+  el.appendChild(toast);
+  setTimeout(()=>toast.remove(),900);
 }
 function ans(g){
   const i=queue[pos];

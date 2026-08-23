@@ -15,6 +15,36 @@ function save(){
   saveT=setTimeout(()=>{try{localStorage.setItem("wortschatz-v1",JSON.stringify(S))}catch(e){console.error("opslaan mislukt",e)}},350);
 }
 
+/* ---------- thema (licht/donker) ---------- */
+function initTheme(){
+  try{
+    if(localStorage.getItem("wortschatz-theme")==="dark")document.documentElement.dataset.theme="dark";
+  }catch(e){}
+}
+function toggleTheme(){
+  const isDark=document.documentElement.dataset.theme==="dark";
+  if(isDark)delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme="dark";
+  try{localStorage.setItem("wortschatz-theme",isDark?"light":"dark")}catch(e){}
+  render();
+}
+
+/* ---------- uitspraak (Web Speech API) ---------- */
+function escAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;")}
+function speak(text){
+  if(!("speechSynthesis" in window)||!text)return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="de-DE";
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speakerBtn(text){
+  const enabled="speechSynthesis" in window;
+  return `<button class="speaker-btn" data-speak="${escAttr(text)}" onclick="event.stopPropagation();speak(this.dataset.speak)" ${enabled?"":"disabled"} aria-label="Uitspraak beluisteren">🔊</button>`;
+}
+
 /* ---------- SRS (vereenvoudigde SM-2) ---------- */
 function getCard(i){return S.cards[i]||(S.cards[i]={iv:0,ease:2.5,reps:0,due:0})}
 function preview(c,g){
@@ -57,16 +87,51 @@ function catCounts(k,lvl){
   const seenC=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
   return{total:ids.length,newC,dueC,seenC};
 }
+function categoryMasteredSet(){
+  const set=new Set();
+  for(const k of Object.keys(CATS)){
+    const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
+    if(ids.length&&ids.every(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV))set.add(k);
+  }
+  return set;
+}
+
+/* ---------- mijlpalen / badges ---------- */
+const MASTER_MILESTONES=[10,25,50,100,200,350];
+const STREAK_MILESTONES=[3,7,14,30,100];
+function computeBadges(){
+  const totalMastered=W.filter((_,i)=>S.cards[i]&&S.cards[i].iv>=MASTER_IV).length;
+  const earned=[],next=[];
+  let gotNextMaster=false;
+  for(const m of MASTER_MILESTONES){
+    if(totalMastered>=m)earned.push({icon:"📘",label:`${m} woorden`});
+    else if(!gotNextMaster){next.push({icon:"📘",label:`${m} woorden`});gotNextMaster=true;}
+  }
+  let gotNextStreak=false;
+  for(const s of STREAK_MILESTONES){
+    if(S.streak>=s)earned.push({icon:"🔥",label:`${s} dagen`});
+    else if(!gotNextStreak){next.push({icon:"🔥",label:`${s} dagen`});gotNextStreak=true;}
+  }
+  return{earned,next};
+}
 
 /* ---------- views ---------- */
 const app=document.getElementById("app");
 let view="home",queue=[],pos=0,flipped=false,sessDone=0,sessTotal=0,catFilter=null,checkResult=null;
 let sessMode="mixed",sessLvl="Alles",popupCat=null,popupLvl="Alles",curIdx=0,nodePositions=[],pathH=0,CAT_KEYS=[];
+let combo=0,sessBestCombo=0,sessStartTime=0,preSessionMastered=new Set(),justMasteredCats=[];
 const reducedMotion=()=>window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function header(){
-  return `<header><div class="logo">Wort<span>schatz</span></div><div class="streak">streak <b>${S.streak}</b> ${S.streak===1?"dag":"dagen"}</div></header>`;
+  const dark=document.documentElement.dataset.theme==="dark";
+  return `<header>
+    <div class="header-left"><div class="logo">Wort<span>schatz</span></div></div>
+    <div class="header-right">
+      <div class="streak">streak <b>${S.streak}</b> ${S.streak===1?"dag":"dagen"}</div>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Thema wisselen">${dark?"☀️":"🌙"}</button>
+    </div>
+  </header>`;
 }
 
 /* ---------- adventure path ---------- */
@@ -87,15 +152,23 @@ function updateTraveledPath(idx){
   if(!svg)return;
   let travEl=svg.querySelector(".path-traveled");
   const d=idx>0?buildPathD(nodePositions.slice(0,idx+1)):"";
-  if(d){
-    if(!travEl){
-      travEl=document.createElementNS("http://www.w3.org/2000/svg","path");
-      travEl.setAttribute("class","path-traveled");
-      svg.appendChild(travEl);
-    }
-    travEl.setAttribute("d",d);
-  }else if(travEl){
-    travEl.remove();
+  if(!d){if(travEl)travEl.remove();return}
+  if(!travEl){
+    travEl=document.createElementNS("http://www.w3.org/2000/svg","path");
+    travEl.setAttribute("class","path-traveled");
+    svg.appendChild(travEl);
+  }
+  travEl.setAttribute("d",d);
+  if(!reducedMotion()){
+    try{
+      const len=travEl.getTotalLength();
+      travEl.style.transition="none";
+      travEl.style.strokeDasharray=len;
+      travEl.style.strokeDashoffset=len;
+      void travEl.getBoundingClientRect();
+      travEl.style.transition="stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)";
+      travEl.style.strokeDashoffset="0";
+    }catch(e){}
   }
 }
 function selectNode(idx){
@@ -149,6 +222,9 @@ function renderModal(){
   </div>`;
 }
 
+const LANDMARK_EMOJIS=["🌳","🪨","🧭","🌼","🏔️"];
+function artHtmlFor(art){return ART[art]?`<span class="art ${ART[art][1]}">${ART[art][0]}</span>`:""}
+
 function home(){
   const due=dueIds().length,nw=newIds().length;
   const chips=["Alles","A1","A2","B1"].map(l=>`<button class="chip ${S.lvl===l?"on":""}" onclick="setLvl('${l}')">${l}</button>`).join("");
@@ -159,28 +235,58 @@ function home(){
   curIdx=(S.curNode!=null&&S.curNode<keys.length)?S.curNode:0;
   const svgD=buildPathD(nodePositions);
   const traveledD=curIdx>0?buildPathD(nodePositions.slice(0,curIdx+1)):"";
+  const landmarksHtml=nodePositions.slice(0,-1).map((p0,i)=>{
+    if(i%3!==1)return"";
+    const p1=nodePositions[i+1];
+    const mx=clamp((p0.x+p1.x)/2+(i%2===0?16:-16),6,94);
+    const my=(p0.y+p1.y)/2;
+    const emo=LANDMARK_EMOJIS[Math.floor(i/3)%LANDMARK_EMOJIS.length];
+    return `<span class="landmark" style="left:${mx}%;top:${my/H*100}%;animation-delay:${(i*0.4)}s">${emo}</span>`;
+  }).join("");
   const nodesHtml=keys.map((k,idx)=>{
     const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
     const seen=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
+    const mastered=ids.filter(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV).length;
     const pct=ids.length?Math.round(seen/ids.length*100):0;
+    const state=seen===0?"state-new":(ids.length&&mastered===ids.length?"state-mastered":"");
+    const bloom=justMasteredCats.includes(k)?"bloom":"";
     const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join("·");
     const p=nodePositions[idx];
-    return `<button class="node ${idx===curIdx?"current":""}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${CATS[k]}">
+    return `<button class="node ${idx===curIdx?"current":""} ${state} ${bloom}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${CATS[k]}">
       <span class="node-ring"><span class="node-face">${CAT_ICON[k]||"📘"}</span></span>
       <span class="node-label">${CATS[k]}</span>
       <span class="node-lvl">${lvls}</span>
     </button>`;
   }).join("");
+  justMasteredCats=[];
   const wp=nodePositions[curIdx];
-  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${wp.y/H*100}%"><span class="char">🚶</span><span class="char-shadow"></span></div>`;
+  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${wp.y/H*100}%">${renderWalkerContent()}</div>`;
+
+  const dayIndex=Math.floor(Date.now()/864e5);
+  const wotdIdx=dayIndex%W.length;
+  const[wCat,wLvl,wArt,wDe,wNl]=W[wotdIdx];
+
+  const{earned,next}=computeBadges();
+  const badgesHtml=[...earned.map(b=>`<span class="badge"><span class="badge-icon">${b.icon}</span>${b.label}</span>`),
+    ...next.map(b=>`<span class="badge locked"><span class="badge-icon">${b.icon}</span>${b.label}</span>`)].join("");
+
   app.innerHTML=header()+`
   <div class="chips">${chips}</div>
+  <div class="panel wotd">
+    <div>
+      <div class="wotd-badge">Woord van de dag</div>
+      <div class="wotd-word">${artHtmlFor(wArt)}${wDe}</div>
+      <div class="wotd-nl">${wNl} · ${CATS[wCat]}</div>
+    </div>
+    ${speakerBtn(wDe)}
+  </div>
   <div class="home-layout">
     <div class="path-col">
       <div class="panel path-panel">
-        <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen — je figuurtje loopt er naartoe</div>
+        <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen</div>
         <div class="path-area" style="aspect-ratio:100/${H}">
           <svg class="path-svg" viewBox="0 0 100 ${H}"><path class="path-bg" d="${svgD}"/>${traveledD?`<path class="path-traveled" d="${traveledD}"/>`:""}</svg>
+          ${landmarksHtml}
           ${nodesHtml}
           ${walkerHtml}
         </div>
@@ -194,7 +300,8 @@ function home(){
           <div class="tn"><b>${nw}</b><span>NIEUW IN SESSIE</span></div>
           <div class="tn"><b>${(S.log[today()]||{}).rev||0}</b><span>GEDAAN VANDAAG</span></div>
         </div>
-        <button class="btn-main" ${due+nw===0?"disabled":""} onclick="startSession()">${due+nw===0?"Alles geleerd — kom terug voor herhalingen":"Start sessie ("+(due+nw)+" kaarten)"}</button>
+        <div class="badges">${badgesHtml}</div>
+        <button class="btn-main" style="margin-top:14px" ${due+nw===0?"disabled":""} onclick="startSession()">${due+nw===0?"Alles geleerd — kom terug voor herhalingen":"Start sessie ("+(due+nw)+" kaarten)"}</button>
         <button class="chip ${S.typeMode?"on":""}" onclick="toggleType()" style="margin-top:12px">Antwoord typen: ${S.typeMode?"aan":"uit"}</button>
         <span class="sub" style="font-size:12px;margin-left:8px">${S.typeMode?"traint spelling & precisie":"hardop zeggen, zelf beoordelen"}</span>
         <div class="legend"><span><i class="dot" style="background:var(--der)"></i>der</span><span><i class="dot" style="background:var(--die)"></i>die</span><span><i class="dot" style="background:var(--das)"></i>das</span><span style="margin-left:auto">leer het lidwoord als kleur mee</span></div>
@@ -212,7 +319,9 @@ function startSession(){
   const q=[...dueIds(),...newIds()];
   if(!q.length)return;
   queue=q;sessMode="mixed";sessLvl=S.lvl;catFilter=null;
-  pos=0;sessDone=0;sessTotal=q.length;flipped=false;checkResult=null;view="sess";render();
+  pos=0;sessDone=0;sessTotal=q.length;flipped=false;checkResult=null;
+  combo=0;sessBestCombo=0;sessStartTime=Date.now();preSessionMastered=categoryMasteredSet();
+  view="sess";render();
 }
 function startCategorySession(k,mode,lvl){
   const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k&&(lvl==="Alles"||W[i][1]===lvl));
@@ -228,21 +337,30 @@ function startCategorySession(k,mode,lvl){
   }
   if(!ids2.length)return;
   queue=ids2;pos=0;sessDone=0;sessTotal=ids2.length;flipped=false;checkResult=null;
+  combo=0;sessBestCombo=0;sessStartTime=Date.now();preSessionMastered=categoryMasteredSet();
   sessMode=mode;sessLvl=lvl;catFilter=k;
   closePopup();
   view="sess";render();
 }
 function render(){view==="home"?home():view==="sess"?sess():done()}
+
+function revealCard(cb){
+  const inner=document.querySelector(".card-inner");
+  if(!inner||reducedMotion()){cb();return}
+  inner.classList.add("is-flipped");
+  setTimeout(cb,420);
+}
+
 function sess(){
   if(pos>=queue.length){view="done";render();return}
   const i=queue[pos],[cat,lvl,art,de,nl]=W[i],c=getCard(i);
-  const artHtml=ART[art]?`<span class="art ${ART[art][1]}">${ART[art][0]}</span>`:"";
+  const artHtml=artHtmlFor(art);
   const forceType=sessMode==="check"||S.typeMode;
   let fb="";
-  if(flipped&&checkResult){
-    if(checkResult.k==="perfect")fb=`<div class="hint" style="color:var(--das)">Perfect — ook de spelling klopt</div>`;
-    else if(checkResult.k==="close")fb=`<div class="hint" style="color:var(--brass)">Bijna goed — let op spelling of hoofdletters.<br>Jij typte: &ldquo;${checkResult.t}&rdquo;</div>`;
-    else fb=`<div class="hint" style="color:var(--die)">Nog niet.${checkResult.t?`<br>Jij typte: &ldquo;${checkResult.t}&rdquo;`:""}</div>`;
+  if(checkResult){
+    if(checkResult.k==="perfect")fb=`<div class="answer-fb" style="color:var(--das)">Perfect — ook de spelling klopt</div>`;
+    else if(checkResult.k==="close")fb=`<div class="answer-fb" style="color:var(--brass)">Bijna goed — let op spelling of hoofdletters.<br>Jij typte: &ldquo;${checkResult.t}&rdquo;</div>`;
+    else fb=`<div class="answer-fb" style="color:var(--die)">Nog niet.${checkResult.t?`<br>Jij typte: &ldquo;${checkResult.t}&rdquo;`:""}</div>`;
   }
   const bottom=flipped
     ?(sessMode==="check"
@@ -260,12 +378,25 @@ function sess(){
           <button class="reveal-btn" style="margin-top:0;flex:0 0 auto;padding:14px 16px" onclick="dontKnow()">Weet ik niet</button>
         </div>`
       :`<button class="reveal-btn" onclick="flip()">Toon antwoord</button>`);
+  const comboHtml=combo>=2?`<span class="combo-chip">🔥 ${combo} op rij!</span>`:"";
   app.innerHTML=header()+`
   <div class="sess-top"><span>${MODE_LABEL[sessMode]||""} · ${sessDone} / ${sessTotal}</span><div class="progress"><i style="width:${sessTotal?Math.round(sessDone/sessTotal*100):0}%"></i></div><button onclick="endSess()">stoppen</button></div>
   <div class="card" tabindex="0" ${!forceType&&!flipped?'onclick="flip()"':""}>
+    ${comboHtml}
     <div class="cat-tag">${CATS[cat]} · ${lvl}${c.reps===0?" · nieuw":""}</div>
-    <div class="prompt">${nl}</div>
-    ${flipped?`<div class="answer">${artHtml}${de}</div>${fb}`:`<div class="hint">${forceType?"Typ het Duitse antwoord hieronder":"Zeg het antwoord hardop, tik dan om te checken"}</div>`}
+    <div class="card-flip-zone">
+      <div class="card-inner ${flipped?"is-flipped":""}">
+        <div class="card-face card-front">
+          <div class="prompt">${nl}</div>
+          <div class="hint">${forceType?"Typ het Duitse antwoord hieronder":"Zeg het antwoord hardop, tik dan om te checken"}</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="prompt prompt-small">${nl}</div>
+          <div class="answer">${artHtml}${de}${speakerBtn(de)}</div>
+          ${fb}
+        </div>
+      </div>
+    </div>
   </div>${bottom}`;
   const ti=document.getElementById("typein");if(ti)ti.focus();
 }
@@ -281,18 +412,24 @@ function checkTyped(){
     if(norm(t)===norm(tg))k="close";
   }
   if(!t)k="wrong";
-  checkResult={k,t};flipped=true;render();
-  if(sessMode==="check"){
-    const g=k==="perfect"?3:k==="close"?2:0;
-    ans(g);
-  }
+  checkResult={k,t};
+  revealCard(()=>{
+    flipped=true;render();
+    if(sessMode==="check"){
+      const g=k==="perfect"?3:k==="close"?2:0;
+      ans(g);
+    }
+  });
 }
 function dontKnow(){
-  checkResult={k:"wrong",t:""};flipped=true;render();
-  if(sessMode==="check")ans(0);
+  checkResult={k:"wrong",t:""};
+  revealCard(()=>{
+    flipped=true;render();
+    if(sessMode==="check")ans(0);
+  });
 }
 function toggleType(){S.typeMode=!S.typeMode;save();home()}
-function flip(){flipped=true;render()}
+function flip(){revealCard(()=>{flipped=true;render()})}
 const CHEER_WORDS={3:["Geweldig!","Fantastisch!","Top!","Uitstekend!"],2:["Goed zo!","Mooi!","Prima!"],1:["Onthouden!","Bijna daar!"]};
 function burstFx(el,g){
   const good=g===3;
@@ -325,6 +462,7 @@ function burstFx(el,g){
 function ans(g){
   const i=queue[pos];
   const cardEl=document.querySelector(".card");
+  if(g===0)combo=0;else{combo++;sessBestCombo=Math.max(sessBestCombo,combo);}
   const proceed=()=>{
     grade(i,g);
     if(g===0)queue.push(i);else sessDone++;
@@ -333,10 +471,16 @@ function ans(g){
   };
   if(reducedMotion()||!cardEl){proceed();return}
   if(g===0){cardEl.classList.add("shake");setTimeout(proceed,320)}
-  else{burstFx(cardEl,g);setTimeout(proceed,380)}
+  else{burstFx(cardEl,g);if(g>=2)mascotReact("happy");setTimeout(proceed,380)}
 }
 function endSess(){catFilter=null;sessMode="mixed";view="home";render()}
+function formatElapsed(ms){
+  const s=Math.max(0,Math.round(ms/1000));
+  return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+}
 function done(){
+  const nowMastered=categoryMasteredSet();
+  justMasteredCats=[...nowMastered].filter(k=>!preSessionMastered.has(k));
   let more,continueCall;
   if(catFilter){
     const c=catCounts(catFilter,sessLvl);
@@ -346,12 +490,19 @@ function done(){
     more=dueIds().length+newIds().length;
     continueCall=`startSession()`;
   }
-  app.innerHTML=header()+`<div class="done panel"><h2>Sessie klaar</h2><div class="big">${sessDone}</div><div class="sub">kaarten geoefend · streak: ${S.streak} ${S.streak===1?"dag":"dagen"}</div>
+  const elapsed=formatElapsed(Date.now()-sessStartTime);
+  app.innerHTML=header()+`<div class="done panel"><h2>Sessie klaar</h2><div class="big">${sessDone}</div><div class="sub">streak: ${S.streak} ${S.streak===1?"dag":"dagen"}</div>
+  <div class="summary-row">
+    <div class="summary-item"><b>${sessDone}</b>kaarten</div>
+    <div class="summary-item"><b>${sessBestCombo}</b>beste combo</div>
+    <div class="summary-item"><b>${elapsed}</b>tijd</div>
+  </div>
   ${more>0?`<button class="btn-main" style="margin-top:26px" onclick="${continueCall}">Nog een sessie (${more} kaarten)</button>`:""}
   <button class="btn-main" style="margin-top:${more>0?"10":"26"}px;background:transparent;color:var(--ink);border:1px solid var(--line)" onclick="catFilter=null;sessMode='mixed';view='home';render()">Terug naar overzicht</button></div>`;
   if(sessDone>0&&!reducedMotion()){
     const big=document.querySelector(".done .big");
     if(big)burstFx(big,3);
+    mascotReact("cheer");
   }
 }
 function gramView(){
@@ -376,5 +527,6 @@ document.addEventListener("keydown",e=>{
   if(e.code==="Space"&&!flipped&&!forceType){e.preventDefault();flip()}
   else if(flipped&&sessMode!=="check"&&["1","2","3","4"].includes(e.key))ans(Number(e.key)-1);
 });
-window.setLvl=setLvl;window.startSession=startSession;window.startCategorySession=startCategorySession;window.selectNode=selectNode;window.setPopupLvl=setPopupLvl;window.closePopup=closePopup;window.flip=flip;window.ans=ans;window.endSess=endSess;window.resetAll=resetAll;window.render=render;window.gramView=gramView;window.checkTyped=checkTyped;window.dontKnow=dontKnow;window.toggleType=toggleType;
+window.setLvl=setLvl;window.startSession=startSession;window.startCategorySession=startCategorySession;window.selectNode=selectNode;window.setPopupLvl=setPopupLvl;window.closePopup=closePopup;window.flip=flip;window.ans=ans;window.endSess=endSess;window.resetAll=resetAll;window.render=render;window.gramView=gramView;window.checkTyped=checkTyped;window.dontKnow=dontKnow;window.toggleType=toggleType;window.toggleTheme=toggleTheme;window.speak=speak;
+initTheme();
 load().then(home);

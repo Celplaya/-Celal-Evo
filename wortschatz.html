@@ -223,7 +223,7 @@ function catCounts(k,lvl){
 
 /* ---------- views ---------- */
 const app=document.getElementById("app");
-let view="home",queue=[],pos=0,flipped=false,sessDone=0,catFilter=null,checkResult=null;
+let view="home",queue=[],pos=0,flipped=false,sessDone=0,sessTotal=0,catFilter=null,checkResult=null;
 let sessMode="mixed",sessLvl="Alles",popupCat=null,popupLvl="Alles",curIdx=0,nodePositions=[],pathH=0,CAT_KEYS=[];
 const reducedMotion=()=>window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -343,7 +343,7 @@ function startSession(){
   const q=[...dueIds(),...newIds()];
   if(!q.length)return;
   queue=q;sessMode="mixed";sessLvl=S.lvl;catFilter=null;
-  pos=0;sessDone=0;flipped=false;checkResult=null;view="sess";render();
+  pos=0;sessDone=0;sessTotal=q.length;flipped=false;checkResult=null;view="sess";render();
 }
 function startCategorySession(k,mode,lvl){
   const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k&&(lvl==="Alles"||W[i][1]===lvl));
@@ -351,9 +351,14 @@ function startCategorySession(k,mode,lvl){
   let ids2;
   if(mode==="new")ids2=ids.filter(i=>!S.cards[i]||S.cards[i].reps===0).slice(0,NEW_PER_SESSION);
   else if(mode==="review")ids2=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0&&S.cards[i].due<=now);
-  else ids2=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0);
+  else if(mode==="check")ids2=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0);
+  else{
+    const due=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0&&S.cards[i].due<=now);
+    const nw=ids.filter(i=>!S.cards[i]||S.cards[i].reps===0).slice(0,NEW_PER_SESSION);
+    ids2=[...due,...nw];
+  }
   if(!ids2.length)return;
-  queue=ids2;pos=0;sessDone=0;flipped=false;checkResult=null;
+  queue=ids2;pos=0;sessDone=0;sessTotal=ids2.length;flipped=false;checkResult=null;
   sessMode=mode;sessLvl=lvl;catFilter=k;
   closePopup();
   view="sess";render();
@@ -387,7 +392,7 @@ function sess(){
         </div>`
       :`<button class="reveal-btn" onclick="flip()">Toon antwoord</button>`);
   app.innerHTML=header()+`
-  <div class="sess-top"><span>${MODE_LABEL[sessMode]||""} · ${sessDone} / ${queue.length}</span><div class="progress"><i style="width:${Math.round(sessDone/queue.length*100)}%"></i></div><button onclick="endSess()">stoppen</button></div>
+  <div class="sess-top"><span>${MODE_LABEL[sessMode]||""} · ${sessDone} / ${sessTotal}</span><div class="progress"><i style="width:${sessTotal?Math.round(sessDone/sessTotal*100):0}%"></i></div><button onclick="endSess()">stoppen</button></div>
   <div class="card" tabindex="0" ${!forceType&&!flipped?'onclick="flip()"':""}>
     <div class="cat-tag">${CATS[cat]} · ${lvl}${c.reps===0?" · nieuw":""}</div>
     <div class="prompt">${nl}</div>
@@ -455,9 +460,9 @@ function ans(g){
 function endSess(){catFilter=null;sessMode="mixed";view="home";render()}
 function done(){
   let more,continueCall;
-  if(catFilter&&sessMode!=="mixed"){
+  if(catFilter){
     const c=catCounts(catFilter,sessLvl);
-    more=sessMode==="new"?c.newC:sessMode==="review"?c.dueC:c.seenC;
+    more=sessMode==="new"?c.newC:sessMode==="review"?c.dueC:sessMode==="check"?c.seenC:(c.dueC+c.newC);
     continueCall=`startCategorySession('${catFilter}','${sessMode}','${sessLvl}')`;
   }else{
     more=dueIds().length+newIds().length;
@@ -477,7 +482,7 @@ function gramView(){
     return `<div class="panel"><div class="cat-tag" style="font-size:11.5px;letter-spacing:1.2px;color:var(--brass-dim);text-transform:uppercase;margin-bottom:8px">Regel ${n+1}</div><h2 style="font-size:17px">${l[0]}</h2><p class="sub" style="margin:8px 0 12px;line-height:1.6">${l[1]}</p>${ex}</div>`;
   }).join("");
   app.innerHTML=header()+`<div class="sess-top"><span>Grammatica-gids</span><span></span><button onclick="view='home';render()">terug</button></div>${lessons}
-  <button class="btn-main" onclick="catFilter='gram';sessMode='mixed';startSession()">Oefen deze regels als drills</button>
+  <button class="btn-main" onclick="startCategorySession('gram','mixed','Alles')">Oefen deze regels als drills</button>
   <div class="note" style="margin-top:10px">Tip: lees één regel, oefen dan de drills — regels beklijven pas door ze te gebruiken.</div>`;
 }
 function resetAll(){

@@ -36,23 +36,52 @@ button{font-family:'Karla',sans-serif;cursor:pointer;border:none;border-radius:1
 .chips{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .chip{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:6px 14px;border-radius:999px;font-size:13.5px}
 .chip.on{border-color:var(--brass);color:var(--brass)}
-.cat{display:flex;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid var(--line)}
-.cat:last-child{border-bottom:none}
-.cat-info{flex:1;min-width:0}
-.cat-name{font-weight:600;font-size:15px}
-.cat-lvl{font-size:11.5px;color:var(--brass-dim);letter-spacing:.6px;margin-left:7px}
 .bar{height:4px;background:var(--panel2);border-radius:4px;margin-top:7px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--brass);border-radius:4px;transition:width .4s}
-.cat-nums{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-top:12px}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
 .method{font-size:13px;color:var(--muted);line-height:1.6;padding:14px 16px;border-left:2px solid var(--brass-dim);background:var(--panel);border-radius:0 var(--r) var(--r) 0}
+/* path / adventure map */
+.path-panel{padding-bottom:10px}
+.path-area{position:relative;width:100%;margin-top:8px}
+.path-svg{position:absolute;inset:0;width:100%;height:100%}
+.path-svg path{fill:none;stroke:var(--line);stroke-width:.7;stroke-dasharray:1.6 2.4;stroke-linecap:round}
+.node{position:absolute;transform:translate(-50%,-50%);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:78px;padding:6px 0;z-index:2}
+.node-ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--brass) calc(var(--pct)*1%),var(--panel2) 0);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--panel);transition:box-shadow .2s}
+.node-face{width:45px;height:45px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:21px}
+.node.current .node-ring{box-shadow:0 0 0 3px var(--brass)}
+.node:active .node-face{transform:scale(.92)}
+.node-label{font-size:10px;color:var(--ink);text-align:center;line-height:1.15;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node-lvl{font-size:8.5px;color:var(--brass-dim);letter-spacing:.4px}
+.walker{position:absolute;transform:translate(-50%,-100%);font-size:28px;z-index:5;transition:left .6s cubic-bezier(.4,0,.2,1),top .6s cubic-bezier(.4,0,.2,1);animation:walker-bob 1.8s ease-in-out infinite;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45));pointer-events:none}
+.walker.walking{animation:walker-step .28s ease-in-out infinite}
+@keyframes walker-bob{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-108%)}}
+@keyframes walker-step{0%,100%{transform:translate(-50%,-100%) rotate(-6deg)}50%{transform:translate(-50%,-104%) rotate(6deg)}}
+/* modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,13,11,.72);display:flex;align-items:flex-end;justify-content:center;z-index:50;animation:fade-in .18s ease}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+.modal{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:24px 20px 26px;width:100%;max-width:640px;text-align:center;animation:sheet-up .22s ease;max-height:88vh;overflow-y:auto}
+@media (min-width:680px){.modal-backdrop{align-items:center}.modal{border-radius:20px;max-width:440px}}
+@keyframes sheet-up{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-close{position:absolute;top:10px;right:12px;background:none;color:var(--muted);font-size:18px;padding:6px}
+.modal-icon{font-size:38px;margin-bottom:6px}
+.modal h2{font-size:19px;margin-bottom:14px}
+.lvl-breakdown{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.lvl-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.lvl-tag{width:22px;flex:0 0 auto;font-weight:600;color:var(--brass-dim);text-align:left}
+.lvl-row .bar{flex:1;margin:0}
+.lvl-nums{flex:0 0 auto;white-space:nowrap}
+.modal-modes{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.mode-btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:14px 16px;border-radius:12px;font-weight:600;font-size:14.5px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;transition:transform .08s}
+.mode-btn small{font-weight:400;color:var(--muted);font-size:11.5px}
+.mode-btn:disabled{opacity:.4}
+.mode-btn:active{transform:scale(.985);background:var(--panel)}
 /* session */
 .sess-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:13px;color:var(--muted)}
 .sess-top button{background:none;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
 .progress{flex:1;height:3px;background:var(--panel2);border-radius:3px;margin:0 16px;overflow:hidden}
 .progress i{display:block;height:100%;background:var(--brass);transition:width .3s}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:44px 24px 38px;text-align:center;min-height:290px;display:flex;flex-direction:column;justify-content:center;cursor:pointer}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:44px 24px 38px;text-align:center;min-height:290px;display:flex;flex-direction:column;justify-content:center;cursor:pointer}
 .card .cat-tag{font-size:11.5px;letter-spacing:1.2px;color:var(--brass-dim);text-transform:uppercase;margin-bottom:18px}
 .prompt{font-size:23px;font-weight:500}
 .answer{font-family:'Fraunces',serif;font-size:37px;font-weight:600;line-height:1.15;margin-top:20px}
@@ -67,14 +96,31 @@ button{font-family:'Karla',sans-serif;cursor:pointer;border:none;border-radius:1
 .reveal-btn{width:100%;padding:14px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:600;margin-top:14px;border-radius:11px;font-size:15px}
 .type-in{width:100%;margin-top:14px;padding:13px 14px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--ink);font-size:16px;font-family:'Karla',sans-serif}
 .type-in:focus{outline:2px solid var(--brass);outline-offset:1px;border-color:var(--brass-dim)}
+/* feedback fx */
+.fx-particle{position:absolute;pointer-events:none;font-size:18px;transform:translate(-50%,-50%);animation:fx-pop .85s ease-out forwards;z-index:6}
+@keyframes fx-pop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+  15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}
+  100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.7)}
+}
+.card.shake{animation:card-shake .32s ease}
+@keyframes card-shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(7px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(3px)}
+}
+.card.glow-gold{box-shadow:0 0 0 3px var(--brass) inset,0 0 30px -4px var(--brass)}
+.card.glow-green{box-shadow:0 0 0 3px var(--das) inset,0 0 30px -4px var(--das)}
 /* done */
 .done{text-align:center;padding:60px 20px}
 .done h2{font-size:26px;margin-bottom:10px}
-.done .big{font-family:'Fraunces',serif;font-size:52px;font-weight:600;color:var(--brass);margin:18px 0 6px}
+.done .big{position:relative;display:inline-block;font-family:'Fraunces',serif;font-size:52px;font-weight:600;color:var(--brass);margin:18px 0 6px}
 footer{margin-top:34px;text-align:center}
 footer button{background:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:6px}
 .note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
-@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 button:focus-visible,.card:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 </style>
 </head>
@@ -83,6 +129,9 @@ button:focus-visible,.card:focus-visible{outline:2px solid var(--brass);outline-
 <script>
 /* ---------- data: [cat, lvl, artikel(r/e/s/-), Duits, Nederlands] ---------- */
 const CATS={bas:"Basis & begroeting",tijd:"Getallen & tijd",eten:"Eten & drinken",fam:"Familie & mensen",verb:"Alledaagse werkwoorden",reis:"Onderweg & reizen",rest:"In het restaurant",hotel:"In het hotel",zwit:"Bergen & wandelen",ch:"Typisch Zwitsers (CH)",sport:"Sport & lichaam",auto:"Auto & detailing",werk:"Werk & geld",spreek:"Gesprek & mening",zin:"Nuttige zinnetjes",gram:"Grammatica-drills"};
+const CAT_ICON={bas:"👋",tijd:"⏰",eten:"🍽️",fam:"👪",verb:"🏃",reis:"✈️",rest:"🍜",hotel:"🏨",zwit:"⛰️",ch:"🇨🇭",sport:"🏋️",auto:"🚗",werk:"💼",spreek:"💬",zin:"🗣️",gram:"📐"};
+const LVL_LABEL={A1:"Makkelijk",A2:"Gemiddeld",B1:"Moeilijk",Alles:"Alles"};
+const MODE_LABEL={mixed:"Sessie",new:"Nieuwe woorden",review:"Herhalen",check:"Controleren"};
 const W=[
 ["bas","A1","-","Guten Morgen","goedemorgen"],["bas","A1","-","Guten Tag","goedendag"],["bas","A1","-","Guten Abend","goedenavond"],["bas","A1","-","Tschüss","doei"],["bas","A1","-","Auf Wiedersehen","tot ziens"],["bas","A1","-","bitte","alsjeblieft / graag gedaan"],["bas","A1","-","danke","dank je"],["bas","A1","-","Entschuldigung","sorry / pardon"],["bas","A1","-","Wie geht's?","hoe gaat het?"],["bas","A1","-","gut","goed"],["bas","A1","-","schlecht","slecht"],["bas","A1","-","Ich heiße …","ik heet …"],["bas","A1","-","Ich komme aus den Niederlanden","ik kom uit Nederland"],["bas","A1","-","Ich verstehe nicht","ik begrijp het niet"],["bas","A1","-","langsam","langzaam"],["bas","A1","-","natürlich","natuurlijk"],["bas","A1","-","genau","precies / klopt"],["bas","A1","-","leider","helaas"],["bas","A1","-","gerne","graag"],["bas","A1","-","vielleicht","misschien"],["bas","A1","-","Hallo","hallo"],["bas","A1","-","Ja","ja"],["bas","A1","-","Nein","nee"],["bas","A2","-","Wie bitte?","pardon? (niet verstaan)"],["bas","A2","-","Viel Glück","veel geluk"],["bas","B1","-","Es freut mich","aangenaam kennis te maken"],["bas","B1","-","Macht nichts","het geeft niet"],
 ["tijd","A1","-","eins","één"],["tijd","A1","-","zwei","twee"],["tijd","A1","-","drei","drie"],["tijd","A1","-","vier","vier"],["tijd","A1","-","fünf","vijf"],["tijd","A1","-","sechs","zes"],["tijd","A1","-","sieben","zeven"],["tijd","A1","-","acht","acht"],["tijd","A1","-","neun","negen"],["tijd","A1","-","zehn","tien"],["tijd","A1","-","zwanzig","twintig"],["tijd","A1","-","hundert","honderd"],["tijd","A1","-","heute","vandaag"],["tijd","A1","-","morgen","morgen"],["tijd","A1","-","gestern","gisteren"],["tijd","A1","-","jetzt","nu"],["tijd","A1","-","später","later"],["tijd","A1","e","Stunde","uur (60 min)"],["tijd","A1","e","Woche","week"],["tijd","A1","s","Jahr","jaar"],["tijd","A1","-","elf","elf"],["tijd","A1","-","zwölf","twaalf"],["tijd","A1","-","dreißig","dertig"],["tijd","A1","-","Montag","maandag"],["tijd","A1","-","Freitag","vrijdag"],["tijd","A2","r","Monat","maand"],["tijd","A2","-","immer","altijd"],["tijd","A2","-","manchmal","soms"],["tijd","B1","-","demnächst","binnenkort"],
@@ -113,7 +162,7 @@ const GRAM=[
 const NEW_PER_SESSION=15, MASTER_IV=21;
 
 /* ---------- state & storage ---------- */
-let S={cards:{},streak:0,lastDay:null,log:{},lvl:"Alles",typeMode:false};
+let S={cards:{},streak:0,lastDay:null,log:{},lvl:"Alles",typeMode:false,curNode:0};
 let memOnly=false;
 const today=()=>new Date().toISOString().slice(0,10);
 async function load(){
@@ -163,29 +212,104 @@ function newIds(){
   // geen daglimiet meer — elke sessie brengt max NEW_PER_SESSION nieuwe kaarten
   return W.map((_,i)=>i).filter(i=>!S.cards[i]||S.cards[i].reps===0).filter(inLvl).slice(0,NEW_PER_SESSION);
 }
+function catCounts(k,lvl){
+  const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k&&(lvl==="Alles"||W[i][1]===lvl));
+  const now=Date.now();
+  const newC=ids.filter(i=>!S.cards[i]||S.cards[i].reps===0).length;
+  const dueC=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0&&S.cards[i].due<=now).length;
+  const seenC=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
+  return{total:ids.length,newC,dueC,seenC};
+}
 
 /* ---------- views ---------- */
 const app=document.getElementById("app");
 let view="home",queue=[],pos=0,flipped=false,sessDone=0,catFilter=null,checkResult=null;
+let sessMode="mixed",sessLvl="Alles",popupCat=null,popupLvl="Alles",curIdx=0,nodePositions=[],pathH=0,CAT_KEYS=[];
+const reducedMotion=()=>window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function header(){
   return `<header><div class="logo">Wort<span>schatz</span></div><div class="streak">streak <b>${S.streak}</b> ${S.streak===1?"dag":"dagen"}</div></header>`;
 }
+
+/* ---------- adventure path ---------- */
+function buildPathD(pts){
+  if(!pts.length)return"";
+  let d=`M ${pts[0].x} ${pts[0].y}`;
+  for(let i=1;i<pts.length;i++){
+    const p0=pts[i-1],p1=pts[i];
+    const mx=(p0.x+p1.x)/2,my=(p0.y+p1.y)/2;
+    d+=` Q ${p0.x} ${p0.y} ${mx} ${my}`;
+  }
+  const last=pts[pts.length-1];
+  d+=` T ${last.x} ${last.y}`;
+  return d;
+}
+function selectNode(idx){
+  if(idx===curIdx){openPopup(CAT_KEYS[idx]);return}
+  const target=nodePositions[idx],walkerEl=document.getElementById("walker");
+  curIdx=idx;S.curNode=idx;save();
+  document.querySelectorAll(".node").forEach((n,i)=>n.classList.toggle("current",i===idx));
+  if(!walkerEl||reducedMotion()){openPopup(CAT_KEYS[idx]);return}
+  walkerEl.classList.add("walking");
+  walkerEl.style.left=target.x+"%";
+  walkerEl.style.top=(target.y/pathH*100)+"%";
+  setTimeout(()=>{walkerEl.classList.remove("walking");openPopup(CAT_KEYS[idx])},620);
+}
+function openPopup(k){popupCat=k;popupLvl="Alles";renderModal()}
+function closePopup(){popupCat=null;const root=document.getElementById("modal-root");if(root)root.innerHTML=""}
+function setPopupLvl(l){popupLvl=l;renderModal()}
+function renderModal(){
+  const k=popupCat,root=document.getElementById("modal-root");
+  if(!k||!root)return;
+  const levels=[...new Set(W.filter(w=>w[0]===k).map(w=>w[1]))].sort();
+  const chips=["Alles",...levels].map(l=>`<button class="chip ${popupLvl===l?"on":""}" onclick="setPopupLvl('${l}')">${LVL_LABEL[l]||l}</button>`).join("");
+  const c=catCounts(k,popupLvl);
+  const breakdown=levels.map(l=>{
+    const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k&&W[i][1]===l);
+    const seen=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
+    const mast=ids.filter(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV).length;
+    return `<div class="lvl-row"><span class="lvl-tag">${l}</span><div class="bar"><i style="width:${ids.length?Math.round(seen/ids.length*100):0}%"></i></div><span class="lvl-nums">${seen}/${ids.length} · ${mast} beheerst</span></div>`;
+  }).join("");
+  root.innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closePopup()">
+    <div class="modal">
+      <button class="modal-close" onclick="closePopup()" aria-label="Sluiten">✕</button>
+      <div class="modal-icon">${CAT_ICON[k]||"📘"}</div>
+      <h2>${CATS[k]}</h2>
+      <div class="lvl-breakdown">${breakdown}</div>
+      <div class="chips" style="justify-content:center;margin:14px 0 4px">${chips}</div>
+      <div class="modal-modes">
+        <button class="mode-btn" ${c.newC===0?"disabled":""} onclick="startCategorySession('${k}','new','${popupLvl}')">🆕 Nieuwe woorden leren<small>${c.newC} nieuwe woorden</small></button>
+        <button class="mode-btn" ${c.dueC===0?"disabled":""} onclick="startCategorySession('${k}','review','${popupLvl}')">🔁 Woorden herhalen<small>${c.dueC} te herhalen</small></button>
+        <button class="mode-btn" ${c.seenC===0?"disabled":""} onclick="startCategorySession('${k}','check','${popupLvl}')">✅ Controleren<small>${c.seenC} woorden testen</small></button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function home(){
   const due=dueIds().length,nw=newIds().length;
   const chips=["Alles","A1","A2","B1"].map(l=>`<button class="chip ${S.lvl===l?"on":""}" onclick="setLvl('${l}')">${l}</button>`).join("");
-  let cats="";
-  for(const k in CATS){
-    const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k&&inLvl(i));
-    if(!ids.length)continue;
+  const keys=Object.keys(CATS);
+  const spacing=34,H=16+(keys.length-1)*spacing+18;
+  nodePositions=keys.map((k,idx)=>({x:clamp(50+Math.sin(idx*0.9)*28,16,84),y:10+idx*spacing}));
+  pathH=H;CAT_KEYS=keys;
+  curIdx=(S.curNode!=null&&S.curNode<keys.length)?S.curNode:0;
+  const svgD=buildPathD(nodePositions);
+  const nodesHtml=keys.map((k,idx)=>{
+    const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
     const seen=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
-    const mast=ids.filter(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV).length;
-    const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join(" · ");
-    cats+=`<div class="cat" role="button" tabindex="0" onclick="startCat('${k}')" onkeydown="if(event.key==='Enter')startCat('${k}')" style="cursor:pointer">
-      <div class="cat-info"><span class="cat-name">${CATS[k]}</span><span class="cat-lvl">${lvls}</span>
-      <div class="bar"><i style="width:${ids.length?Math.round(seen/ids.length*100):0}%"></i></div></div>
-      <div class="cat-nums">${seen}/${ids.length} gezien<br>${mast} beheerst</div></div>`;
-  }
+    const pct=ids.length?Math.round(seen/ids.length*100):0;
+    const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join("·");
+    const p=nodePositions[idx];
+    return `<button class="node ${idx===curIdx?"current":""}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${CATS[k]}">
+      <span class="node-ring"><span class="node-face">${CAT_ICON[k]||"📘"}</span></span>
+      <span class="node-label">${CATS[k]}</span>
+      <span class="node-lvl">${lvls}</span>
+    </button>`;
+  }).join("");
+  const wp=nodePositions[curIdx];
+  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${wp.y/H*100}%">🚶</div>`;
   app.innerHTML=header()+`
   <div class="chips">${chips}</div>
   <div class="panel">
@@ -200,27 +324,46 @@ function home(){
     <span class="sub" style="font-size:12px;margin-left:8px">${S.typeMode?"traint spelling & precisie":"hardop zeggen, zelf beoordelen"}</span>
     <div class="legend"><span><i class="dot" style="background:var(--der)"></i>der</span><span><i class="dot" style="background:var(--die)"></i>die</span><span><i class="dot" style="background:var(--das)"></i>das</span><span style="margin-left:auto">leer het lidwoord als kleur mee</span></div>
   </div>
-  <div class="panel">${cats}</div>
+  <div class="panel path-panel">
+    <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen — je figuurtje loopt er naartoe</div>
+    <div class="path-area" style="aspect-ratio:100/${H}">
+      <svg class="path-svg" viewBox="0 0 100 ${H}"><path d="${svgD}"/></svg>
+      ${nodesHtml}
+      ${walkerHtml}
+    </div>
+  </div>
   <button class="reveal-btn" onclick="gramView()" style="margin:0 0 14px">Grammatica-gids · de 6 regels</button>
   <div class="method"><b style="color:var(--ink)">De methode.</b> Je ziet het Nederlands en haalt het Duits actief uit je geheugen — dat ophalen zelf is de training. Daarna beoordeel je jezelf eerlijk: het algoritme plant elk woord opnieuw in vlak vóór het vergeetmoment. Kort en dagelijks wint van lang en soms.</div>
   <footer><button onclick="resetAll()">Voortgang wissen</button></footer>
+  <div id="modal-root"></div>
   ${memOnly?'<div class="note">Let op: opslag niet beschikbaar — voortgang geldt alleen voor deze sessie.</div>':""}`;
 }
-function startCat(k){catFilter=k;startSession()}
 function setLvl(l){S.lvl=l;save();home()}
 function startSession(){
-  let due=dueIds(),nw=newIds();
-  if(catFilter){due=due.filter(i=>W[i][0]===catFilter);nw=W.map((_,i)=>i).filter(i=>W[i][0]===catFilter&&inLvl(i)&&(!S.cards[i]||S.cards[i].reps===0)&&!due.includes(i)).slice(0,NEW_PER_SESSION);}
-  queue=[...due,...nw];
-  if(!queue.length){catFilter=null;home();return}
-  // nieuwe kaarten tellen voor daglimiet (alleen algemene sessie)
-  pos=0;sessDone=0;flipped=false;view="sess";render();
+  const q=[...dueIds(),...newIds()];
+  if(!q.length)return;
+  queue=q;sessMode="mixed";sessLvl=S.lvl;catFilter=null;
+  pos=0;sessDone=0;flipped=false;checkResult=null;view="sess";render();
+}
+function startCategorySession(k,mode,lvl){
+  const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k&&(lvl==="Alles"||W[i][1]===lvl));
+  const now=Date.now();
+  let ids2;
+  if(mode==="new")ids2=ids.filter(i=>!S.cards[i]||S.cards[i].reps===0).slice(0,NEW_PER_SESSION);
+  else if(mode==="review")ids2=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0&&S.cards[i].due<=now);
+  else ids2=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0);
+  if(!ids2.length)return;
+  queue=ids2;pos=0;sessDone=0;flipped=false;checkResult=null;
+  sessMode=mode;sessLvl=lvl;catFilter=k;
+  closePopup();
+  view="sess";render();
 }
 function render(){view==="home"?home():view==="sess"?sess():done()}
 function sess(){
   if(pos>=queue.length){view="done";render();return}
   const i=queue[pos],[cat,lvl,art,de,nl]=W[i],c=getCard(i);
   const artHtml=ART[art]?`<span class="art ${ART[art][1]}">${ART[art][0]}</span>`:"";
+  const forceType=sessMode==="check"||S.typeMode;
   let fb="";
   if(flipped&&checkResult){
     if(checkResult.k==="perfect")fb=`<div class="hint" style="color:var(--das)">Perfect — ook de spelling klopt</div>`;
@@ -228,25 +371,27 @@ function sess(){
     else fb=`<div class="hint" style="color:var(--die)">Nog niet.${checkResult.t?`<br>Jij typte: &ldquo;${checkResult.t}&rdquo;`:""}</div>`;
   }
   const bottom=flipped
-    ?`<div class="grades">
-    <button class="grade g0" onclick="ans(0)">Opnieuw<small>${preview(c,0)}</small></button>
-    <button class="grade" onclick="ans(1)">Moeilijk<small>${preview(c,1)}</small></button>
-    <button class="grade" onclick="ans(2)">Goed<small>${preview(c,2)}</small></button>
-    <button class="grade g3" onclick="ans(3)">Makkelijk<small>${preview(c,3)}</small></button>
-  </div>`
-    :(S.typeMode
+    ?(sessMode==="check"
+      ?`<div class="hint" style="margin-top:14px">Volgende komt eraan…</div>`
+      :`<div class="grades">
+      <button class="grade g0" onclick="ans(0)">Opnieuw<small>${preview(c,0)}</small></button>
+      <button class="grade" onclick="ans(1)">Moeilijk<small>${preview(c,1)}</small></button>
+      <button class="grade" onclick="ans(2)">Goed<small>${preview(c,2)}</small></button>
+      <button class="grade g3" onclick="ans(3)">Makkelijk<small>${preview(c,3)}</small></button>
+    </div>`)
+    :(forceType
       ?`<input id="typein" class="type-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Typ het Duits (ae/oe/ue mag voor umlauten)" onkeydown="if(event.key==='Enter')checkTyped()">
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="reveal-btn" style="margin-top:0;flex:1" onclick="checkTyped()">Controleer</button>
-          <button class="reveal-btn" style="margin-top:0;flex:0 0 auto;padding:14px 16px" onclick="checkResult={k:'wrong',t:''};flip()">Weet ik niet</button>
+          <button class="reveal-btn" style="margin-top:0;flex:0 0 auto;padding:14px 16px" onclick="dontKnow()">Weet ik niet</button>
         </div>`
       :`<button class="reveal-btn" onclick="flip()">Toon antwoord</button>`);
   app.innerHTML=header()+`
-  <div class="sess-top"><span>${sessDone} / ${queue.length}</span><div class="progress"><i style="width:${Math.round(sessDone/queue.length*100)}%"></i></div><button onclick="endSess()">stoppen</button></div>
-  <div class="card" tabindex="0" ${!S.typeMode&&!flipped?'onclick="flip()"':""}>
+  <div class="sess-top"><span>${MODE_LABEL[sessMode]||""} · ${sessDone} / ${queue.length}</span><div class="progress"><i style="width:${Math.round(sessDone/queue.length*100)}%"></i></div><button onclick="endSess()">stoppen</button></div>
+  <div class="card" tabindex="0" ${!forceType&&!flipped?'onclick="flip()"':""}>
     <div class="cat-tag">${CATS[cat]} · ${lvl}${c.reps===0?" · nieuw":""}</div>
     <div class="prompt">${nl}</div>
-    ${flipped?`<div class="answer">${artHtml}${de}</div>${fb}`:`<div class="hint">${S.typeMode?"Typ het Duitse antwoord hieronder":"Zeg het antwoord hardop, tik dan om te checken"}</div>`}
+    ${flipped?`<div class="answer">${artHtml}${de}</div>${fb}`:`<div class="hint">${forceType?"Typ het Duitse antwoord hieronder":"Zeg het antwoord hardop, tik dan om te checken"}</div>`}
   </div>${bottom}`;
   const ti=document.getElementById("typein");if(ti)ti.focus();
 }
@@ -263,23 +408,68 @@ function checkTyped(){
   }
   if(!t)k="wrong";
   checkResult={k,t};flipped=true;render();
+  if(sessMode==="check"){
+    const g=k==="perfect"?3:k==="close"?2:0;
+    ans(g);
+  }
+}
+function dontKnow(){
+  checkResult={k:"wrong",t:""};flipped=true;render();
+  if(sessMode==="check")ans(0);
 }
 function toggleType(){S.typeMode=!S.typeMode;save();home()}
 function flip(){flipped=true;render()}
-function ans(g){
-  const i=queue[pos],wasNew=getCard(i).reps===0;
-  grade(i,g);
-  if(g===0)queue.push(i);else sessDone++;
-  queue.splice(pos,1);
-  flipped=false;checkResult=null;render();
+function burstFx(el,g){
+  const good=g===3;
+  const n=good?10:7;
+  const emojis=good?["✨","⭐","🎉","💫"]:["✓","✨","·"];
+  for(let k=0;k<n;k++){
+    const p=document.createElement("span");
+    p.className="fx-particle";
+    p.textContent=emojis[k%emojis.length];
+    const angle=Math.random()*Math.PI*-1-Math.PI/4;
+    const dist=40+Math.random()*70;
+    p.style.setProperty("--dx",(Math.cos(angle)*dist)+"px");
+    p.style.setProperty("--dy",(Math.sin(angle)*dist)+"px");
+    p.style.left="50%";p.style.top="42%";
+    p.style.animationDelay=(Math.random()*80)+"ms";
+    el.appendChild(p);
+    setTimeout(()=>p.remove(),950);
+  }
+  el.classList.add(good?"glow-gold":"glow-green");
+  setTimeout(()=>el.classList.remove("glow-gold","glow-green"),500);
 }
-function endSess(){catFilter=null;view="home";render()}
+function ans(g){
+  const i=queue[pos];
+  const cardEl=document.querySelector(".card");
+  const proceed=()=>{
+    grade(i,g);
+    if(g===0)queue.push(i);else sessDone++;
+    queue.splice(pos,1);
+    flipped=false;checkResult=null;render();
+  };
+  if(reducedMotion()||!cardEl){proceed();return}
+  if(g===0){cardEl.classList.add("shake");setTimeout(proceed,320)}
+  else{burstFx(cardEl,g);setTimeout(proceed,380)}
+}
+function endSess(){catFilter=null;sessMode="mixed";view="home";render()}
 function done(){
-  catFilter=null;
-  const more=dueIds().length+newIds().length;
+  let more,continueCall;
+  if(catFilter&&sessMode!=="mixed"){
+    const c=catCounts(catFilter,sessLvl);
+    more=sessMode==="new"?c.newC:sessMode==="review"?c.dueC:c.seenC;
+    continueCall=`startCategorySession('${catFilter}','${sessMode}','${sessLvl}')`;
+  }else{
+    more=dueIds().length+newIds().length;
+    continueCall=`startSession()`;
+  }
   app.innerHTML=header()+`<div class="done panel"><h2>Sessie klaar</h2><div class="big">${sessDone}</div><div class="sub">kaarten geoefend · streak: ${S.streak} ${S.streak===1?"dag":"dagen"}</div>
-  ${more>0?`<button class="btn-main" style="margin-top:26px" onclick="startSession()">Nog een sessie (${more} kaarten)</button>`:""}
-  <button class="btn-main" style="margin-top:${more>0?"10":"26"}px;background:transparent;color:var(--ink);border:1px solid var(--line)" onclick="view='home';render()">Terug naar overzicht</button></div>`;
+  ${more>0?`<button class="btn-main" style="margin-top:26px" onclick="${continueCall}">Nog een sessie (${more} kaarten)</button>`:""}
+  <button class="btn-main" style="margin-top:${more>0?"10":"26"}px;background:transparent;color:var(--ink);border:1px solid var(--line)" onclick="catFilter=null;sessMode='mixed';view='home';render()">Terug naar overzicht</button></div>`;
+  if(sessDone>0&&!reducedMotion()){
+    const big=document.querySelector(".done .big");
+    if(big)burstFx(big,3);
+  }
 }
 function gramView(){
   const lessons=GRAM.map((l,n)=>{
@@ -287,22 +477,23 @@ function gramView(){
     return `<div class="panel"><div class="cat-tag" style="font-size:11.5px;letter-spacing:1.2px;color:var(--brass-dim);text-transform:uppercase;margin-bottom:8px">Regel ${n+1}</div><h2 style="font-size:17px">${l[0]}</h2><p class="sub" style="margin:8px 0 12px;line-height:1.6">${l[1]}</p>${ex}</div>`;
   }).join("");
   app.innerHTML=header()+`<div class="sess-top"><span>Grammatica-gids</span><span></span><button onclick="view='home';render()">terug</button></div>${lessons}
-  <button class="btn-main" onclick="catFilter='gram';startSession()">Oefen deze regels als drills</button>
+  <button class="btn-main" onclick="catFilter='gram';sessMode='mixed';startSession()">Oefen deze regels als drills</button>
   <div class="note" style="margin-top:10px">Tip: lees één regel, oefen dan de drills — regels beklijven pas door ze te gebruiken.</div>`;
 }
 function resetAll(){
   if(!confirm("Alle voortgang en je streak wissen?"))return;
-  S={cards:{},streak:0,lastDay:null,log:{},lvl:S.lvl};
+  S={cards:{},streak:0,lastDay:null,log:{},lvl:S.lvl,typeMode:S.typeMode,curNode:0};
   try{localStorage.setItem("wortschatz-v1",JSON.stringify(S))}catch(e){}
   home();
 }
 document.addEventListener("keydown",e=>{
   if(view!=="sess")return;
   if(e.target&&e.target.id==="typein")return;
-  if(e.code==="Space"&&!flipped&&!S.typeMode){e.preventDefault();flip()}
-  else if(flipped&&["1","2","3","4"].includes(e.key))ans(Number(e.key)-1);
+  const forceType=sessMode==="check"||S.typeMode;
+  if(e.code==="Space"&&!flipped&&!forceType){e.preventDefault();flip()}
+  else if(flipped&&sessMode!=="check"&&["1","2","3","4"].includes(e.key))ans(Number(e.key)-1);
 });
-window.startCat=startCat;window.setLvl=setLvl;window.startSession=startSession;window.flip=flip;window.ans=ans;window.endSess=endSess;window.resetAll=resetAll;window.render=render;window.gramView=gramView;window.checkTyped=checkTyped;window.toggleType=toggleType;
+window.setLvl=setLvl;window.startSession=startSession;window.startCategorySession=startCategorySession;window.selectNode=selectNode;window.setPopupLvl=setPopupLvl;window.closePopup=closePopup;window.flip=flip;window.ans=ans;window.endSess=endSess;window.resetAll=resetAll;window.render=render;window.gramView=gramView;window.checkTyped=checkTyped;window.dontKnow=dontKnow;window.toggleType=toggleType;
 load().then(home);
 </script>
 </body>

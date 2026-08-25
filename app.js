@@ -87,13 +87,31 @@ function catCounts(k,lvl){
   const seenC=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
   return{total:ids.length,newC,dueC,seenC};
 }
+function isCategoryMastered(k){
+  const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
+  return ids.length>0&&ids.every(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV);
+}
+function categoryDueCount(k){
+  const now=Date.now();
+  return W.map((_,i)=>i).filter(i=>W[i][0]===k&&S.cards[i]&&S.cards[i].reps>0&&S.cards[i].due<=now).length;
+}
 function categoryMasteredSet(){
   const set=new Set();
-  for(const k of Object.keys(CATS)){
-    const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
-    if(ids.length&&ids.every(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV))set.add(k);
-  }
+  for(const k of Object.keys(CATS))if(isCategoryMastered(k))set.add(k);
   return set;
+}
+function buildMasteredSegments(keys){
+  const segs=[];
+  let runStart=null;
+  for(let i=0;i<keys.length-1;i++){
+    if(isCategoryMastered(keys[i])){
+      if(runStart===null)runStart=i;
+    }else if(runStart!==null){
+      segs.push([runStart,i]);runStart=null;
+    }
+  }
+  if(runStart!==null)segs.push([runStart,keys.length-1]);
+  return segs;
 }
 
 /* ---------- mijlpalen / badges ---------- */
@@ -235,6 +253,9 @@ function home(){
   curIdx=(S.curNode!=null&&S.curNode<keys.length)?S.curNode:0;
   const svgD=buildPathD(nodePositions);
   const traveledD=curIdx>0?buildPathD(nodePositions.slice(0,curIdx+1)):"";
+  const masteredSegHtml=buildMasteredSegments(keys).map(([a,b])=>
+    `<path class="path-mastered" d="${buildPathD(nodePositions.slice(a,b+1))}"/>`
+  ).join("");
   const landmarksHtml=nodePositions.slice(0,-1).map((p0,i)=>{
     if(i%3!==1)return"";
     const p1=nodePositions[i+1];
@@ -248,12 +269,16 @@ function home(){
     const seen=ids.filter(i=>S.cards[i]&&S.cards[i].reps>0).length;
     const mastered=ids.filter(i=>S.cards[i]&&S.cards[i].iv>=MASTER_IV).length;
     const pct=ids.length?Math.round(seen/ids.length*100):0;
-    const state=seen===0?"state-new":(ids.length&&mastered===ids.length?"state-mastered":"");
+    const catIsMastered=ids.length>0&&mastered===ids.length;
+    const state=seen===0?"state-new":(catIsMastered?"state-mastered":"");
     const bloom=justMasteredCats.includes(k)?"bloom":"";
+    const dueHere=categoryDueCount(k);
+    const badgeHtml=dueHere>0?`<span class="node-badge">${dueHere>99?"99+":dueHere}</span>`:"";
+    const checkHtml=catIsMastered?`<span class="node-check">✓</span>`:"";
     const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join("·");
     const p=nodePositions[idx];
     return `<button class="node ${idx===curIdx?"current":""} ${state} ${bloom}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${CATS[k]}">
-      <span class="node-ring"><span class="node-face">${CAT_ICON[k]||"📘"}</span></span>
+      <span class="node-ring">${badgeHtml}${checkHtml}<span class="node-face">${CAT_ICON[k]||"📘"}</span></span>
       <span class="node-label">${CATS[k]}</span>
       <span class="node-lvl">${lvls}</span>
     </button>`;
@@ -285,7 +310,7 @@ function home(){
       <div class="panel path-panel">
         <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen</div>
         <div class="path-area" style="aspect-ratio:100/${H}">
-          <svg class="path-svg" viewBox="0 0 100 ${H}"><path class="path-bg" d="${svgD}"/>${traveledD?`<path class="path-traveled" d="${traveledD}"/>`:""}</svg>
+          <svg class="path-svg" viewBox="0 0 100 ${H}"><path class="path-bg" d="${svgD}"/>${masteredSegHtml}${traveledD?`<path class="path-traveled" d="${traveledD}"/>`:""}</svg>
           ${landmarksHtml}
           ${nodesHtml}
           ${walkerHtml}

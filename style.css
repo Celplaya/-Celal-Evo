@@ -85,10 +85,13 @@ button{font-family:'Karla',sans-serif;cursor:pointer;border:none;border-radius:1
 .path-svg{position:absolute;inset:0;width:100%;height:100%}
 .path-svg path.path-bg{fill:none;stroke:var(--line);stroke-width:.7;stroke-dasharray:1.6 2.4;stroke-linecap:round}
 .path-svg path.path-traveled{fill:none;stroke:var(--brass);stroke-width:.9;stroke-linecap:round;opacity:.9;filter:drop-shadow(0 0 2px rgba(184,130,60,.4))}
+.path-svg path.path-mastered{fill:none;stroke:var(--das);stroke-width:.9;stroke-linecap:round;opacity:.75}
 .landmark{position:absolute;transform:translate(-50%,-50%);font-size:20px;opacity:.55;pointer-events:none;z-index:1;animation:landmark-drift 6s ease-in-out infinite}
 @keyframes landmark-drift{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-4px)}}
 .node{position:absolute;transform:translate(-50%,-50%);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:78px;padding:6px 0;z-index:2}
-.node-ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--brass) calc(var(--pct)*1%),var(--panel2) 0);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm),0 0 0 3px var(--panel);transition:box-shadow .2s,transform .2s}
+.node-ring{position:relative;width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--brass) calc(var(--pct)*1%),var(--panel2) 0);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm),0 0 0 3px var(--panel);transition:box-shadow .2s,transform .2s}
+.node-badge{position:absolute;top:-4px;right:-4px;background:var(--accent2);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:var(--shadow-sm);z-index:3;line-height:1}
+.node-check{position:absolute;bottom:-2px;right:-2px;background:var(--das);color:#fff;font-size:10px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);z-index:3;line-height:1}
 .node-face{width:45px;height:45px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:21px;transition:transform .15s,filter .2s}
 .node.state-new .node-ring{background:var(--panel2)}
 .node.state-new .node-face{filter:grayscale(.55) opacity(.75)}

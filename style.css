@@ -21,6 +21,16 @@
   --shadow-md:0 6px 18px -6px rgba(0,0,0,.45);
   --shadow-lg:0 16px 40px -12px rgba(0,0,0,.55);
 }
+/* Turkse cultuur-tint: warm koraalrood + turkoois i.p.v. het Duitse goud/terracotta.
+   Duits behoudt bewust zijn bestaande accentkleuren (geen overrides hieronder). */
+:root[data-lang="tr"]{
+  --brass:#c1473a; --brass-dim:#973a30;
+  --accent2:#1f9d95; --accent2-dim:#146f69; --accent2-soft:#dcf2f0;
+}
+:root[data-lang="tr"][data-theme="dark"]{
+  --brass:#e2695a; --brass-dim:#b8503f;
+  --accent2:#3ecbc0; --accent2-dim:#2a9089; --accent2-soft:#1b3a37;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font-family:'Karla',sans-serif;font-size:16px;line-height:1.55;min-height:100vh;transition:background .25s ease,color .25s ease}
@@ -43,6 +53,11 @@ header{display:flex;align-items:baseline;justify-content:space-between;padding:6
 .streak b{color:var(--brass);font-weight:600;font-size:15px}
 .theme-toggle{background:var(--panel2);border:1px solid var(--line);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;flex:0 0 auto;box-shadow:var(--shadow-sm)}
 .theme-toggle:active{transform:scale(.92)}
+.lang-switch{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px;flex:0 0 auto}
+.lang-switch button{background:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;opacity:.45;filter:grayscale(.6)}
+.lang-switch button.on{opacity:1;filter:none;background:var(--panel);box-shadow:var(--shadow-sm)}
+.lang-switch button:active{transform:scale(.92)}
+.gram-note{margin-top:12px;padding:8px 12px;background:var(--panel2);border-radius:var(--r-sm);color:var(--muted);font-size:12.5px;line-height:1.5;text-align:left}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
 h2{font-family:'Fraunces',serif;font-weight:500;font-size:19px;margin-bottom:4px}
 .sub{color:var(--muted);font-size:13.5px}
@@ -80,7 +95,16 @@ button{font-family:'Karla',sans-serif;cursor:pointer;border:none;border-radius:1
 .badge.locked{background:var(--panel2);color:var(--muted);opacity:.6}
 
 /* ===== path / adventure map ===== */
-.path-panel{padding-bottom:10px}
+.path-panel{padding-bottom:10px;position:relative;overflow:hidden}
+.path-panel::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05}
+:root[data-lang="tr"] .path-panel::before{
+  background-image:linear-gradient(45deg,var(--accent2) 25%,transparent 25%),linear-gradient(-45deg,var(--accent2) 25%,transparent 25%);
+  background-size:26px 26px;
+}
+:root[data-lang="de"] .path-panel::before{
+  background-image:repeating-linear-gradient(65deg,var(--accent2) 0 2px,transparent 2px 24px);
+  background-size:34px 34px;
+}
 .path-area{position:relative;width:100%;margin-top:8px}
 .path-svg{position:absolute;inset:0;width:100%;height:100%}
 .path-svg path.path-bg{fill:none;stroke:var(--line);stroke-width:.7;stroke-dasharray:1.6 2.4;stroke-linecap:round}

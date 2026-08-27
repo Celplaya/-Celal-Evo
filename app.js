@@ -172,6 +172,7 @@ let sessMode="mixed",sessLvl="Alles",popupCat=null,popupLvl="Alles",curIdx=0,nod
 let combo=0,sessBestCombo=0,sessStartTime=0,preSessionMastered=new Set(),justMasteredCats=[];
 const reducedMotion=()=>window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const WALKER_Y_OFFSET=17;
 
 function langSwitchHtml(){
   return `<div class="lang-switch">${LANG_ORDER.map(l=>`<button class="${l===S.lang?"on":""}" onclick="setLang('${l}')" aria-label="${LANGS[l].name}" title="${LANGS[l].name}">${LANGS[l].flag}</button>`).join("")}</div>`;
@@ -242,7 +243,7 @@ function selectNode(idx){
   if(!walkerEl||reducedMotion()){openPopup(CAT_KEYS[idx]);return}
   walkerEl.classList.add("walking");
   walkerEl.style.left=target.x+"%";
-  walkerEl.style.top=(target.y/pathH*100)+"%";
+  walkerEl.style.top=((target.y-WALKER_Y_OFFSET)/pathH*100)+"%";
   setTimeout(()=>{walkerEl.classList.remove("walking");openPopup(CAT_KEYS[idx])},620);
 }
 function openPopup(k){popupCat=k;popupLvl="Alles";renderModal()}
@@ -284,8 +285,9 @@ function home(){
   const due=dueIds().length,nw=newIds().length;
   const chips=["Alles","A1","A2","B1"].map(l=>`<button class="chip ${S.lvl===l?"on":""}" onclick="setLvl('${l}')">${l}</button>`).join("");
   const keys=Object.keys(lang.cats);
-  const spacing=34,H=16+(keys.length-1)*spacing+18;
-  nodePositions=keys.map((k,idx)=>({x:clamp(50+Math.sin(idx*0.9)*28,16,84),y:10+idx*spacing}));
+  const spacing=58,H=20+(keys.length-1)*spacing+26;
+  const sideX=idx=>idx===0?50:(idx%2===1?34:66);
+  nodePositions=keys.map((k,idx)=>({x:sideX(idx),y:12+idx*spacing}));
   pathH=H;CAT_KEYS=keys;
   const savedNode=curDeck().curNode;
   curIdx=(savedNode!=null&&savedNode<keys.length)?savedNode:0;
@@ -303,28 +305,39 @@ function home(){
     const emo=marks[Math.floor(i/3)%marks.length];
     return `<span class="landmark" style="left:${mx}%;top:${my/H*100}%;animation-delay:${(i*0.4)}s">${emo}</span>`;
   }).join("");
+  let masteredCatCount=0;
   const nodesHtml=keys.map((k,idx)=>{
     const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
     const seen=ids.filter(i=>cards[i]&&cards[i].reps>0).length;
     const mastered=ids.filter(i=>cards[i]&&cards[i].iv>=MASTER_IV).length;
     const pct=ids.length?Math.round(seen/ids.length*100):0;
     const catIsMastered=ids.length>0&&mastered===ids.length;
-    const state=seen===0?"state-new":(catIsMastered?"state-mastered":"");
+    if(catIsMastered)masteredCatCount++;
+    const isNew=seen===0;
+    const state=isNew?"state-new":(catIsMastered?"state-mastered":"");
     const bloom=justMasteredCats.includes(k)?"bloom":"";
     const dueHere=categoryDueCount(k);
     const badgeHtml=dueHere>0?`<span class="node-badge">${dueHere>99?"99+":dueHere}</span>`:"";
     const checkHtml=catIsMastered?`<span class="node-check">✓</span>`:"";
-    const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join("·");
+    const ribbonHtml=idx===curIdx?`<span class="node-ribbon">Verder →</span>`:"";
+    const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join(" · ");
+    const icon=isNew?"🔒":(lang.catIcon[k]||"📘");
     const p=nodePositions[idx];
     return `<button class="node ${idx===curIdx?"current":""} ${state} ${bloom}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${lang.cats[k]}">
-      <span class="node-ring">${badgeHtml}${checkHtml}<span class="node-face">${lang.catIcon[k]||"📘"}</span></span>
-      <span class="node-label">${lang.cats[k]}</span>
-      <span class="node-lvl">${lvls}</span>
+      <span class="node-card">
+        ${badgeHtml}${checkHtml}${ribbonHtml}
+        <span class="node-icon">${icon}</span>
+        <span class="node-body">
+          <span class="node-title">${lang.cats[k]}</span>
+          <span class="node-sub">${lvls}</span>
+          <span class="node-stats">⚡ ${ids.length} woorden${dueHere>0?` · ${dueHere} te herhalen`:catIsMastered?" · voltooid":""}</span>
+        </span>
+      </span>
     </button>`;
   }).join("");
   justMasteredCats=[];
   const wp=nodePositions[curIdx];
-  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${wp.y/H*100}%">${renderWalkerContent()}</div>`;
+  const walkerHtml=`<div id="walker" class="walker" style="left:${wp.x}%;top:${(wp.y-WALKER_Y_OFFSET)/H*100}%">${renderWalkerContent()}</div>`;
 
   const dayIndex=Math.floor(Date.now()/864e5);
   const wotdIdx=dayIndex%W.length;
@@ -348,6 +361,8 @@ function home(){
     <div class="path-col">
       <div class="panel path-panel">
         <h2>Jouw pad</h2><div class="sub">Tik op een tegel om te oefenen</div>
+        <div class="progress-path"><span>Voortgang</span><span>${masteredCatCount}/${keys.length} voltooid</span></div>
+        <div class="bar bar-lg"><i style="width:${keys.length?Math.round(masteredCatCount/keys.length*100):0}%"></i></div>
         <div class="path-area" style="aspect-ratio:100/${H}">
           <svg class="path-svg" viewBox="0 0 100 ${H}"><path class="path-bg" d="${svgD}"/>${masteredSegHtml}${traveledD?`<path class="path-traveled" d="${traveledD}"/>`:""}</svg>
           ${landmarksHtml}

@@ -182,7 +182,7 @@ function header(){
     <div class="header-left"><div class="logo">Taal<span>pad</span></div></div>
     <div class="header-right">
       ${langSwitchHtml()}
-      <div class="streak">streak <b>${S.streak}</b> ${S.streak===1?"dag":"dagen"}</div>
+      <div class="streak ${S.streak>0?"hot":""}"><span class="flame">🔥</span> <b>${S.streak}</b> ${S.streak===1?"dag":"dagen"}</div>
       <button class="theme-toggle" onclick="toggleTheme()" aria-label="Thema wisselen">${dark?"☀️":"🌙"}</button>
     </div>
   </header>`;
@@ -433,8 +433,8 @@ function sess(){
       ?`<div class="hint" style="margin-top:14px">Volgende komt eraan…</div>`
       :`<div class="grades">
       <button class="grade g0" onclick="ans(0)">Opnieuw<small>${preview(c,0)}</small></button>
-      <button class="grade" onclick="ans(1)">Moeilijk<small>${preview(c,1)}</small></button>
-      <button class="grade" onclick="ans(2)">Goed<small>${preview(c,2)}</small></button>
+      <button class="grade g1" onclick="ans(1)">Moeilijk<small>${preview(c,1)}</small></button>
+      <button class="grade g2" onclick="ans(2)">Goed<small>${preview(c,2)}</small></button>
       <button class="grade g3" onclick="ans(3)">Makkelijk<small>${preview(c,3)}</small></button>
     </div>`)
     :(forceType
@@ -566,7 +566,7 @@ function done(){
     <div class="summary-item"><b>${elapsed}</b>tijd</div>
   </div>
   ${more>0?`<button class="btn-main" style="margin-top:26px" onclick="${continueCall}">Nog een sessie (${more} kaarten)</button>`:""}
-  <button class="btn-main" style="margin-top:${more>0?"10":"26"}px;background:transparent;color:var(--ink);border:1px solid var(--line)" onclick="catFilter=null;sessMode='mixed';view='home';render()">Terug naar overzicht</button></div>`;
+  <button class="btn-main btn-ghost" style="margin-top:${more>0?"10":"26"}px" onclick="catFilter=null;sessMode='mixed';view='home';render()">Terug naar overzicht</button></div>`;
   if(sessDone>0&&!reducedMotion()){
     const big=document.querySelector(".done .big");
     if(big)burstFx(big,3);
@@ -577,7 +577,7 @@ function gramView(){
   const guide=curLang().gramGuide;
   if(!guide){view="home";render();return}
   const lessons=guide.map((l,n)=>{
-    const ex=l[2].map(p=>{const[t,nlx]=p.split("|");return `<div style="margin:8px 0"><span style="font-family:'Fraunces',serif;font-size:17px">${t}</span><br><span style="color:var(--muted);font-size:13px">${nlx}</span></div>`}).join("");
+    const ex=l[2].map(p=>{const[t,nlx]=p.split("|");return `<div style="margin:8px 0"><span style="font-family:'Fredoka One',cursive;font-size:17px">${t}</span><br><span style="color:var(--muted);font-size:13px">${nlx}</span></div>`}).join("");
     return `<div class="panel"><div class="cat-tag" style="font-size:11.5px;letter-spacing:1.2px;color:var(--brass-dim);text-transform:uppercase;margin-bottom:8px">Regel ${n+1}</div><h2 style="font-size:17px">${l[0]}</h2><p class="sub" style="margin:8px 0 12px;line-height:1.6">${l[1]}</p>${ex}</div>`;
   }).join("");
   app.innerHTML=header()+`<div class="sess-top"><span>Grammatica-gids</span><span></span><button onclick="view='home';render()">terug</button></div>${lessons}

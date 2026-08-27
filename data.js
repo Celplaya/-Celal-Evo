@@ -133,6 +133,12 @@ const W_TR=Object.entries(CATEGORY_WORDS_TR).flatMap(([cat,list])=>list.map(w=>[
 /* ================= taal-config & decks ================= */
 const DECKS={de:W_DE,tr:W_TR};
 const LANGS={
-  de:{id:"de",name:"Duits",flag:"🇩🇪",speechLang:"de-DE",hasArticles:true,cats:CATS_DE,catIcon:CAT_ICON_DE,gramGuide:GRAM_DE},
-  tr:{id:"tr",name:"Turks",flag:"🇹🇷",speechLang:"tr-TR",hasArticles:false,cats:CATS_TR,catIcon:CAT_ICON_TR}
+  de:{id:"de",name:"Duits",flag:"🇩🇪",speechLang:"de-DE",hasArticles:true,cats:CATS_DE,catIcon:CAT_ICON_DE,gramGuide:GRAM_DE,
+    landmarks:["🥨","⛰️","🏰","🍺","🎄"],
+    cheer:{3:["Klasse!","Super gemacht!","Weiter so!","Ausgezeichnet!"],2:["Gut gemacht!","Prima!","Nicht schlecht!"],1:["Fast!","Gleich hast du's!"]}
+  },
+  tr:{id:"tr",name:"Turks",flag:"🇹🇷",speechLang:"tr-TR",hasArticles:false,cats:CATS_TR,catIcon:CAT_ICON_TR,
+    landmarks:["🎈","🕌","🌷","🫖","🧿"],
+    cheer:{3:["Harika!","Mükemmel!","Aferin!"],2:["Çok iyi!","Güzel!","Aynen öyle!"],1:["Neredeyse!","Devam et!"]}
+  }
 };

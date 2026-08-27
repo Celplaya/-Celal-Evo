@@ -299,7 +299,8 @@ function home(){
     const p1=nodePositions[i+1];
     const mx=clamp((p0.x+p1.x)/2+(i%2===0?16:-16),6,94);
     const my=(p0.y+p1.y)/2;
-    const emo=LANDMARK_EMOJIS[Math.floor(i/3)%LANDMARK_EMOJIS.length];
+    const marks=lang.landmarks||LANDMARK_EMOJIS;
+    const emo=marks[Math.floor(i/3)%marks.length];
     return `<span class="landmark" style="left:${mx}%;top:${my/H*100}%;animation-delay:${(i*0.4)}s">${emo}</span>`;
   }).join("");
   const nodesHtml=keys.map((k,idx)=>{
@@ -517,7 +518,8 @@ function burstFx(el,g){
   }
   el.classList.add(good?"glow-gold":"glow-green","pop");
   setTimeout(()=>el.classList.remove("glow-gold","glow-green","pop"),500);
-  const words=CHEER_WORDS[g]||CHEER_WORDS[2];
+  const langCheer=curLang().cheer;
+  const words=(langCheer&&langCheer[g])||(langCheer&&langCheer[2])||CHEER_WORDS[g]||CHEER_WORDS[2];
   const toast=document.createElement("div");
   toast.className="fx-toast";
   toast.style.color=good?"var(--brass)":"var(--das)";

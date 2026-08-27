@@ -130,6 +130,15 @@ const WORDS_TR_ZIN=[
 const CATEGORY_WORDS_TR={bas:WORDS_TR_BAS,tijd:WORDS_TR_TIJD,eten:WORDS_TR_ETEN,fam:WORDS_TR_FAM,verb:WORDS_TR_VERB,reis:WORDS_TR_REIS,sport:WORDS_TR_SPORT,auto:WORDS_TR_AUTO,werk:WORDS_TR_WERK,spreek:WORDS_TR_SPREEK,rest:WORDS_TR_REST,hotel:WORDS_TR_HOTEL,ch:WORDS_TR_CH,zwit:WORDS_TR_ZWIT,gram:WORDS_TR_GRAM,zin:WORDS_TR_ZIN};
 const W_TR=Object.entries(CATEGORY_WORDS_TR).flatMap(([cat,list])=>list.map(w=>[cat,...w]));
 
+const GRAM_TR=[
+["Klinkerharmonie: achtervoegsels passen zich aan","Turkse achtervoegsels hebben geen vaste klank — ze volgen de laatste klinker van het woord. Na e/i klinkt een achtervoegsel met e/i, na a/ı met a/ı, enzovoort. Zo blijft een woord prettig uit te spreken, hoeveel achtervoegsels er ook bij komen.",["evler|huizen (ev + ler)","kitaplar|boeken (kitap + lar)","gözler|ogen (göz + ler)"]],
+["Agglutinatie: één stam, een rits achtervoegsels","Turks plakt betekenissen (tijd, persoon, ontkenning, vraag) als losse blokjes achter elkaar op de stam, in plaats van er aparte woorden voor te gebruiken. Elk blokje heeft een eigen, vaste rol.",["okuyorum|ik lees (nu) — oku + yor + um","geliyor musunuz?|komt u? — gel + iyor + mu + sunuz"]],
+["Naamvallen light: -ı/-i en -a/-e","Een bepaald lijdend voorwerp krijgt de uitgang -ı/-i/-u/-ü (accusatief). Een richting ('naar …') krijgt -a/-e (datief) — een los voorzetsel zoals 'naar' bestaat niet, het achtervoegsel doet het werk.",["Kitabı okuyorum.|Ik lees het boek.","İstanbul'a gidiyorum.|Ik ga naar Istanbul.","Adama yardım ediyorum.|Ik help de man."]],
+["Tegenwoordige tijd: -yor","Voor 'nu bezig zijn met iets' plak je -yor (plus persoonsuitgang) achter de stam. Het is verreweg de meest gebruikte tegenwoordige tijd in gesproken Turks.",["Ne yapıyorsun?|Wat ben je aan het doen?","Çalışıyorum.|Ik ben aan het werken.","Yarın İstanbul'a gidiyorum.|Morgen ga ik naar Istanbul."]],
+["Verleden tijd: -dı/-di/-du/-dü","De verleden tijd volgt dezelfde klinkerharmonie als het meervoud, plus een extra wissel naar -tı/-ti/-tu/-tü na een stemloze medeklinker (p, ç, t, k, …).",["Dün çalıştım.|Ik heb gisteren gewerkt.","Eve gittim.|Ik ben naar huis gegaan."]],
+["Bezit en ja/nee-vragen: var, yok en mi","Turks heeft geen werkwoord voor 'hebben': 'var' (er is) en 'yok' (er is niet) drukken bezit uit. Voor een gewone ja/nee-vraag plak je geen vraagteken-woord vast aan de zin, maar een los deeltje mi/mı/mu/mü — dat zelf ook klinkerharmonie volgt.",["Param var.|Ik heb geld.","Vaktim yok.|Ik heb geen tijd.","Türkçe biliyor musunuz?|Spreekt u Turks?"]]
+];
+
 /* ================= taal-config & decks ================= */
 const DECKS={de:W_DE,tr:W_TR};
 const LANGS={
@@ -137,7 +146,7 @@ const LANGS={
     landmarks:["🥨","⛰️","🏰","🍺","🎄"],
     cheer:{3:["Klasse!","Super gemacht!","Weiter so!","Ausgezeichnet!"],2:["Gut gemacht!","Prima!","Nicht schlecht!"],1:["Fast!","Gleich hast du's!"]}
   },
-  tr:{id:"tr",name:"Turks",flag:"🇹🇷",speechLang:"tr-TR",hasArticles:false,cats:CATS_TR,catIcon:CAT_ICON_TR,
+  tr:{id:"tr",name:"Turks",flag:"🇹🇷",speechLang:"tr-TR",hasArticles:false,cats:CATS_TR,catIcon:CAT_ICON_TR,gramGuide:GRAM_TR,
     landmarks:["🎈","🕌","🌷","🫖","🧿"],
     cheer:{3:["Harika!","Mükemmel!","Aferin!"],2:["Çok iyi!","Güzel!","Aynen öyle!"],1:["Neredeyse!","Devam et!"]}
   }

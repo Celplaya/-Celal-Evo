@@ -387,7 +387,7 @@ function home(){
       </div>
     </div>
   </div>
-  ${lang.gramGuide?`<button class="reveal-btn" onclick="gramView()" style="margin:0 0 14px">Grammatica-gids · de 6 regels</button>`:""}
+  ${lang.gramGuide?`<button class="reveal-btn" onclick="gramView()" style="margin:0 0 14px">Grammatica-gids · de ${lang.gramGuide.length} regels</button>`:""}
   <div class="method"><b style="color:var(--ink)">De methode.</b> Je ziet het Nederlands en haalt het ${lang.name} actief uit je geheugen — dat ophalen zelf is de training. Daarna beoordeel je jezelf eerlijk: het algoritme plant elk woord opnieuw in vlak vóór het vergeetmoment. Kort en dagelijks wint van lang en soms.</div>
   <footer><button onclick="resetAll()">Voortgang wissen</button></footer>
   <div id="modal-root"></div>

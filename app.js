@@ -1,26 +1,29 @@
 /* ---------- state & storage ---------- */
-let S={lang:"de",decks:{de:{cards:{},curNode:0},tr:{cards:{},curNode:0}},streak:0,lastDay:null,log:{},lvl:"Alles",typeMode:false};
+let S={lang:"de",decks:{},streak:0,lastDay:null,log:{},lvl:"Alles",typeMode:false};
 let memOnly=false;
 const today=()=>new Date().toISOString().slice(0,10);
 async function load(){
   try{
     const raw=localStorage.getItem("wortschatz-v1");
+    let migrated=false;
     if(raw){
       const saved=JSON.parse(raw);
       const oldCards=saved.cards,oldNode=saved.curNode;
       S=Object.assign(S,saved);
       if(!S.decks)S.decks={};
-      for(const l of LANG_ORDER)if(!S.decks[l])S.decks[l]={cards:{},curNode:0};
       if(oldCards){
+        if(!S.decks.de)S.decks.de={cards:{},curNode:0};
         if(Object.keys(S.decks.de.cards).length===0){
           S.decks.de.cards=oldCards;
           if(oldNode!=null)S.decks.de.curNode=oldNode;
         }
         delete S.cards;delete S.curNode;
-        save();
+        migrated=true;
       }
       if(!LANGS[S.lang])S.lang="de";
     }
+    for(const l of LANG_ORDER)if(!S.decks[l])S.decks[l]={cards:{},curNode:0};
+    if(migrated)save();
   }catch(e){memOnly=true;}
 }
 let saveT=null;
@@ -383,12 +386,12 @@ function home(){
         <button class="btn-main" style="margin-top:14px" ${due+nw===0?"disabled":""} onclick="startSession()">${due+nw===0?"Alles geleerd — kom terug voor herhalingen":"Start sessie ("+(due+nw)+" kaarten)"}</button>
         <button class="chip ${S.typeMode?"on":""}" onclick="toggleType()" style="margin-top:12px">Antwoord typen: ${S.typeMode?"aan":"uit"}</button>
         <span class="sub" style="font-size:12px;margin-left:8px">${S.typeMode?"traint spelling & precisie":"hardop zeggen, zelf beoordelen"}</span>
-        ${lang.hasArticles?`<div class="legend"><span><i class="dot" style="background:var(--der)"></i>der</span><span><i class="dot" style="background:var(--die)"></i>die</span><span><i class="dot" style="background:var(--das)"></i>das</span><span style="margin-left:auto">leer het lidwoord als kleur mee</span></div>`:""}
+        ${lang.hasArticles&&lang.articleLegend?`<div class="legend">${lang.articleLegend.map(([code,label])=>`<span><i class="dot" style="background:var(${ART[code][1]==="a-der"?"--der":ART[code][1]==="a-die"?"--die":"--das"})"></i>${label}</span>`).join("")}<span style="margin-left:auto">leer het lidwoord als kleur mee</span></div>`:""}
       </div>
     </div>
   </div>
   ${lang.gramGuide?`<button class="reveal-btn" onclick="gramView()" style="margin:0 0 14px">Grammatica-gids · de ${lang.gramGuide.length} regels</button>`:""}
-  <div class="method"><b style="color:var(--ink)">De methode.</b> Je ziet het Nederlands en haalt het ${lang.name} actief uit je geheugen — dat ophalen zelf is de training. Daarna beoordeel je jezelf eerlijk: het algoritme plant elk woord opnieuw in vlak vóór het vergeetmoment. Kort en dagelijks wint van lang en soms.</div>
+  <div class="method"><b style="color:var(--ink)">De methode.</b> ${lang.type==="grammatica"?`Je krijgt een vraag of situatie en haalt zelf het juiste antwoord en de regel uit je geheugen`:`Je ziet het Nederlands en haalt het ${lang.name} actief uit je geheugen`} — dat ophalen zelf is de training. Daarna beoordeel je jezelf eerlijk: het algoritme plant elk woord opnieuw in vlak vóór het vergeetmoment. Kort en dagelijks wint van lang en soms.</div>
   <footer><button onclick="resetAll()">Voortgang wissen</button></footer>
   <div id="modal-root"></div>
   ${memOnly?'<div class="note">Let op: opslag niet beschikbaar — voortgang geldt alleen voor deze sessie.</div>':""}`;
@@ -453,7 +456,7 @@ function sess(){
       <button class="grade g3" onclick="ans(3)">Makkelijk<small>${preview(c,3)}</small></button>
     </div>`)
     :(forceType
-      ?`<input id="typein" class="type-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Typ het ${lang.name}${lang.id==='de'?' (ae/oe/ue mag voor umlauten)':' antwoord'}" onkeydown="if(event.key==='Enter')checkTyped()">
+      ?`<input id="typein" class="type-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${lang.type==='grammatica'?'Typ het antwoord':`Typ het ${lang.name}${lang.id==='de'?' (ae/oe/ue mag voor umlauten)':' antwoord'}`}" onkeydown="if(event.key==='Enter')checkTyped()">
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="reveal-btn" style="margin-top:0;flex:1" onclick="checkTyped()">Controleer</button>
           <button class="reveal-btn" style="margin-top:0;flex:0 0 auto;padding:14px 16px" onclick="dontKnow()">Weet ik niet</button>
@@ -469,7 +472,7 @@ function sess(){
       <div class="card-inner ${flipped?"is-flipped":""}">
         <div class="card-face card-front">
           <div class="prompt">${nl}</div>
-          <div class="hint">${forceType?`Typ het ${lang.name}e antwoord hieronder`:"Zeg het antwoord hardop, tik dan om te checken"}</div>
+          <div class="hint">${forceType?(lang.type==='grammatica'?"Typ het antwoord hieronder":`Typ het ${lang.name}e antwoord hieronder`):"Zeg het antwoord hardop, tik dan om te checken"}</div>
         </div>
         <div class="card-face card-back">
           <div class="prompt prompt-small">${nl}</div>

@@ -145,8 +145,9 @@ button{font-family:'Nunito',sans-serif;font-weight:700;cursor:pointer;border:non
 .node-ribbon{position:absolute;top:-11px;right:12px;background:var(--brass);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.3px;padding:3px 10px;border-radius:999px;box-shadow:0 2px 0 var(--brass-dim);z-index:3;white-space:nowrap}
 .node.state-new .node-card{background:var(--panel2);opacity:.82}
 .node.state-new .node-icon{background:var(--line);filter:grayscale(.4)}
-.node.state-mastered .node-card{background:var(--accent2-soft)}
-.node.state-mastered .node-icon{background:var(--accent2)}
+.node.state-done .node-card{background:var(--accent2-soft)}
+.node.state-done .node-icon{box-shadow:0 0 0 3px var(--accent2)}
+.node.deep-mastered .node-icon{background:var(--accent2);box-shadow:0 0 0 3px var(--accent2),0 0 10px -2px var(--accent2)}
 .node.current .node-card{border-color:var(--brass);box-shadow:0 4px 0 var(--brass-dim);animation:pulse-glow 2.2s ease-in-out infinite}
 .node.tapped .node-card{animation:node-pop .5s cubic-bezier(.34,1.56,.64,1)}
 .node.bloom .node-card{animation:node-bloom .9s ease-out}

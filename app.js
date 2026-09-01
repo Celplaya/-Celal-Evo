@@ -93,8 +93,9 @@ function grade(i,g){
     if(g===1){c.iv=c.reps===0?1:Math.max(1,Math.round(c.iv*1.2));c.ease=Math.max(1.3,c.ease-0.15);}
     if(g===2){c.iv=c.reps===0?1:(c.reps===1?3:Math.round(c.iv*c.ease));}
     if(g===3){c.iv=c.reps===0?2:(c.reps===1?4:Math.round(c.iv*c.ease*1.3));c.ease+=0.1;}
-    c.reps++;c.due=now+c.iv*864e5;
+    c.due=now+c.iv*864e5;
   }
+  c.reps++;
   const d=today();
   if(!S.log[d]){S.log[d]={n:0,rev:0};
     S.streak = S.lastDay===yesterday()? S.streak+1 : (S.lastDay===d? S.streak : 1);
@@ -120,6 +121,11 @@ function catCounts(k,lvl){
   const seenC=ids.filter(i=>c[i]&&c[i].reps>0).length;
   return{total:ids.length,newC,dueC,seenC};
 }
+function isCategoryDone(k){
+  const W=curW(),c=curCards();
+  const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
+  return ids.length>0&&ids.every(i=>c[i]&&c[i].reps>0);
+}
 function isCategoryMastered(k){
   const W=curW(),c=curCards();
   const ids=W.map((_,i)=>i).filter(i=>W[i][0]===k);
@@ -131,14 +137,14 @@ function categoryDueCount(k){
 }
 function categoryMasteredSet(){
   const set=new Set();
-  for(const k of Object.keys(curLang().cats))if(isCategoryMastered(k))set.add(k);
+  for(const k of Object.keys(curLang().cats))if(isCategoryDone(k))set.add(k);
   return set;
 }
 function buildMasteredSegments(keys){
   const segs=[];
   let runStart=null;
   for(let i=0;i<keys.length-1;i++){
-    if(isCategoryMastered(keys[i])){
+    if(isCategoryDone(keys[i])){
       if(runStart===null)runStart=i;
     }else if(runStart!==null){
       segs.push([runStart,i]);runStart=null;
@@ -153,7 +159,7 @@ const MASTER_MILESTONES=[10,25,50,100,200,350];
 const STREAK_MILESTONES=[3,7,14,30,100];
 function computeBadges(){
   const W=curW(),c=curCards();
-  const totalMastered=W.filter((_,i)=>c[i]&&c[i].iv>=MASTER_IV).length;
+  const totalMastered=W.filter((_,i)=>c[i]&&c[i].reps>0).length;
   const earned=[],next=[];
   let gotNextMaster=false;
   for(const m of MASTER_MILESTONES){
@@ -314,26 +320,28 @@ function home(){
     const seen=ids.filter(i=>cards[i]&&cards[i].reps>0).length;
     const mastered=ids.filter(i=>cards[i]&&cards[i].iv>=MASTER_IV).length;
     const pct=ids.length?Math.round(seen/ids.length*100):0;
+    const catDone=ids.length>0&&seen===ids.length;
     const catIsMastered=ids.length>0&&mastered===ids.length;
-    if(catIsMastered)masteredCatCount++;
+    if(catDone)masteredCatCount++;
     const isNew=seen===0;
-    const state=isNew?"state-new":(catIsMastered?"state-mastered":"");
+    const state=isNew?"state-new":(catDone?"state-done":"");
+    const deep=catIsMastered?"deep-mastered":"";
     const bloom=justMasteredCats.includes(k)?"bloom":"";
     const dueHere=categoryDueCount(k);
     const badgeHtml=dueHere>0?`<span class="node-badge">${dueHere>99?"99+":dueHere}</span>`:"";
-    const checkHtml=catIsMastered?`<span class="node-check">✓</span>`:"";
+    const checkHtml=catDone?`<span class="node-check">✓</span>`:"";
     const ribbonHtml=idx===curIdx?`<span class="node-ribbon">Verder →</span>`:"";
     const lvls=[...new Set(ids.map(i=>W[i][1]))].sort().join(" · ");
     const icon=isNew?"🔒":(lang.catIcon[k]||"📘");
     const p=nodePositions[idx];
-    return `<button class="node ${idx===curIdx?"current":""} ${state} ${bloom}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${lang.cats[k]}">
+    return `<button class="node ${idx===curIdx?"current":""} ${state} ${deep} ${bloom}" style="left:${p.x}%;top:${p.y/H*100}%;--pct:${pct}" onclick="selectNode(${idx})" aria-label="${lang.cats[k]}">
       <span class="node-card">
         ${badgeHtml}${checkHtml}${ribbonHtml}
         <span class="node-icon">${icon}</span>
         <span class="node-body">
           <span class="node-title">${lang.cats[k]}</span>
           <span class="node-sub">${lvls}</span>
-          <span class="node-stats">⚡ ${ids.length} woorden${dueHere>0?` · ${dueHere} te herhalen`:catIsMastered?" · voltooid":""}</span>
+          <span class="node-stats">⚡ ${ids.length} woorden${dueHere>0?` · ${dueHere} te herhalen`:catIsMastered?" · beheerst":catDone?" · voltooid":""}</span>
         </span>
       </span>
     </button>`;

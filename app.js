@@ -28,6 +28,7 @@ async function load(){
 }
 let saveT=null;
 function save(){
+  if(typeof window.__syncOnSave==="function")window.__syncOnSave(S);
   if(memOnly)return;
   clearTimeout(saveT);
   saveT=setTimeout(()=>{try{localStorage.setItem("wortschatz-v1",JSON.stringify(S))}catch(e){console.error("opslaan mislukt",e)}},350);
@@ -193,6 +194,7 @@ function header(){
     <div class="header-right">
       ${langSwitchHtml()}
       <div class="streak ${S.streak>0?"hot":""}"><span class="flame">🔥</span> <b>${S.streak}</b> ${S.streak===1?"dag":"dagen"}</div>
+      ${typeof window.__syncHeaderHtml==="function"?window.__syncHeaderHtml():""}
       <button class="theme-toggle" onclick="toggleTheme()" aria-label="Thema wisselen">${dark?"☀️":"🌙"}</button>
     </div>
   </header>`;
@@ -626,4 +628,5 @@ document.addEventListener("keydown",e=>{
 });
 window.setLvl=setLvl;window.setLang=setLang;window.startSession=startSession;window.startCategorySession=startCategorySession;window.selectNode=selectNode;window.setPopupLvl=setPopupLvl;window.closePopup=closePopup;window.flip=flip;window.ans=ans;window.endSess=endSess;window.resetAll=resetAll;window.render=render;window.gramView=gramView;window.checkTyped=checkTyped;window.dontKnow=dontKnow;window.toggleType=toggleType;window.toggleTheme=toggleTheme;window.speak=speak;
 initTheme();
-load().then(()=>{document.documentElement.dataset.lang=S.lang;home();});
+window.__bootApp=function(){load().then(()=>{document.documentElement.dataset.lang=S.lang;home();});};
+if(typeof window.__syncBoot==="function")window.__syncBoot();else window.__bootApp();

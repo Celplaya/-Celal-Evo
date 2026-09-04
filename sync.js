@@ -7,11 +7,11 @@
    Raakt de spelmechaniek, styling of woordenschat niet aan — alleen hoe
    S (zie app.js) bewaard en opgehaald wordt, plus een klein inlogscherm. */
 
-/* Basis-URL van PocketBase. Als de app vanaf de NAS zelf wordt geserveerd
-   werkt "same origin" gewoon (leeg/relatief). Voor lokaal testen vanaf de
-   Mac naar de NAS, zet in plaats daarvan bijvoorbeeld: */
-// const POCKETBASE_URL = "http://truenas-scale.tail5a4b66.ts.net:8090";
+/* Basis-URL van PocketBase. De app wordt vanaf PocketBase zelf geserveerd
+   (pb_public), dus "same origin" is de standaard. */
 const POCKETBASE_URL = window.location.origin;
+// Fallback voor lokaal ontwikkelen (bv. vanaf de Mac naar de NAS):
+// const POCKETBASE_URL = "http://truenas-scale.tail5a4b66.ts.net:8090";
 
 const pb = new PocketBase(POCKETBASE_URL);
 

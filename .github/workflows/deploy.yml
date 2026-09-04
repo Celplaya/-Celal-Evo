@@ -1,0 +1,23 @@
+name: Deploy to PocketBase pb_public
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, truenas]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy static files to pb_public
+        run: |
+          set -euo pipefail
+          cp wortschatz.html app.js data.js mascot.js style.css sync.js favicon.svg /deploy/
+          cp -r vendor /deploy/
+          cp wortschatz.html /deploy/index.html
+
+      - name: Fix permissions for PocketBase
+        run: chmod -R a+rX /deploy

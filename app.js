@@ -83,8 +83,8 @@ function preview(c,g){
   if(g===0)return"<10 min";
   let iv;
   if(g===1)iv=c.reps===0?1:Math.max(1,Math.round(c.iv*1.2));
-  else if(g===2)iv=c.reps===0?1:(c.reps===1?3:Math.round(c.iv*c.ease));
-  else iv=c.reps===0?2:(c.reps===1?4:Math.round(c.iv*c.ease*1.3));
+  else if(g===2)iv=c.reps===0?1:(c.reps===1?3:Math.max(1,Math.round(c.iv*c.ease)));
+  else iv=c.reps===0?2:(c.reps===1?4:Math.max(1,Math.round(c.iv*c.ease*1.3)));
   return iv+" d";
 }
 function grade(i,g){
@@ -92,8 +92,8 @@ function grade(i,g){
   if(g===0){c.ease=Math.max(1.3,c.ease-0.2);c.iv=0;c.due=now+10*60*1000;}
   else{
     if(g===1){c.iv=c.reps===0?1:Math.max(1,Math.round(c.iv*1.2));c.ease=Math.max(1.3,c.ease-0.15);}
-    if(g===2){c.iv=c.reps===0?1:(c.reps===1?3:Math.round(c.iv*c.ease));}
-    if(g===3){c.iv=c.reps===0?2:(c.reps===1?4:Math.round(c.iv*c.ease*1.3));c.ease+=0.1;}
+    if(g===2){c.iv=c.reps===0?1:(c.reps===1?3:Math.max(1,Math.round(c.iv*c.ease)));}
+    if(g===3){c.iv=c.reps===0?2:(c.reps===1?4:Math.max(1,Math.round(c.iv*c.ease*1.3)));c.ease+=0.1;}
     c.due=now+c.iv*864e5;
   }
   c.reps++;
@@ -203,14 +203,14 @@ function header(){
 /* ---------- adventure path ---------- */
 function buildPathD(pts){
   if(!pts.length)return"";
+  if(pts.length===1)return`M ${pts[0].x} ${pts[0].y}`;
   let d=`M ${pts[0].x} ${pts[0].y}`;
-  for(let i=1;i<pts.length;i++){
-    const p0=pts[i-1],p1=pts[i];
-    const mx=(p0.x+p1.x)/2,my=(p0.y+p1.y)/2;
-    d+=` Q ${p0.x} ${p0.y} ${mx} ${my}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    const b1x=p1.x+(p2.x-p0.x)/6,b1y=p1.y+(p2.y-p0.y)/6;
+    const b2x=p2.x-(p3.x-p1.x)/6,b2y=p2.y-(p3.y-p1.y)/6;
+    d+=` C ${b1x} ${b1y} ${b2x} ${b2y} ${p2.x} ${p2.y}`;
   }
-  const last=pts[pts.length-1];
-  d+=` T ${last.x} ${last.y}`;
   return d;
 }
 function updateTraveledPath(idx){

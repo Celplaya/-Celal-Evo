@@ -15,9 +15,11 @@ jobs:
       - name: Copy static files to pb_public
         run: |
           set -euo pipefail
-          cp wortschatz.html app.js data.js mascot.js style.css sync.js favicon.svg /deploy/
+          SHA="${GITHUB_SHA:0:7}"
+          cp app.js data.js mascot.js style.css sync.js favicon.svg /deploy/
           cp -r vendor /deploy/
-          cp wortschatz.html /deploy/index.html
+          sed -E "s#(src|href)=\"(app\.js|data\.js|mascot\.js|style\.css|sync\.js|vendor/pocketbase\.umd\.js)\"#\1=\"\2?v=${SHA}\"#g" wortschatz.html > /deploy/wortschatz.html
+          cp /deploy/wortschatz.html /deploy/index.html
 
       - name: Fix permissions for PocketBase
         run: chmod -R a+rX /deploy

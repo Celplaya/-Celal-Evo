@@ -2,7 +2,7 @@ name: Deploy to PocketBase pb_public
 
 on:
   push:
-    branches: [main]
+    branches: [main, claude/add-file-to-repo-cdd7tr]
   workflow_dispatch: {}
 
 jobs:

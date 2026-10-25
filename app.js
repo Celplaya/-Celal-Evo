@@ -449,7 +449,7 @@ function sess(){
   const lang=curLang(),W=curW();
   const i=queue[pos],[cat,lvl,art,word,nl,note]=W[i],c=getCard(i);
   const artHtml=artHtmlFor(art);
-  const forceType=sessMode==="check"||S.typeMode;
+  const forceType=S.typeMode;
   let fb="";
   if(checkResult){
     if(checkResult.k==="perfect")fb=`<div class="answer-fb" style="color:var(--das)">Perfect — ook de spelling klopt</div>`;
@@ -457,7 +457,7 @@ function sess(){
     else fb=`<div class="answer-fb" style="color:var(--die)">Nog niet.${checkResult.t?`<br>Jij typte: &ldquo;${checkResult.t}&rdquo;`:""}</div>`;
   }
   const bottom=flipped
-    ?(sessMode==="check"
+    ?(sessMode==="check"&&checkResult
       ?`<div class="hint" style="margin-top:14px">Volgende komt eraan…</div>`
       :`<div class="grades">
       <button class="grade g0" onclick="ans(0)">Opnieuw<small>${preview(c,0)}</small></button>
@@ -622,9 +622,9 @@ function resetAll(){
 document.addEventListener("keydown",e=>{
   if(view!=="sess")return;
   if(e.target&&e.target.id==="typein")return;
-  const forceType=sessMode==="check"||S.typeMode;
+  const forceType=S.typeMode;
   if(e.code==="Space"&&!flipped&&!forceType){e.preventDefault();flip()}
-  else if(flipped&&sessMode!=="check"&&["1","2","3","4"].includes(e.key))ans(Number(e.key)-1);
+  else if(flipped&&!(sessMode==="check"&&checkResult)&&["1","2","3","4"].includes(e.key))ans(Number(e.key)-1);
 });
 window.setLvl=setLvl;window.setLang=setLang;window.startSession=startSession;window.startCategorySession=startCategorySession;window.selectNode=selectNode;window.setPopupLvl=setPopupLvl;window.closePopup=closePopup;window.flip=flip;window.ans=ans;window.endSess=endSess;window.resetAll=resetAll;window.render=render;window.gramView=gramView;window.checkTyped=checkTyped;window.dontKnow=dontKnow;window.toggleType=toggleType;window.toggleTheme=toggleTheme;window.speak=speak;
 initTheme();
